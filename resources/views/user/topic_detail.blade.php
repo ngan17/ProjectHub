@@ -1,163 +1,226 @@
-@extends('user.layouts.app')
+@extends('layouts.user')
 
-@section('page-title', 'Chi tiết đề tài')
 @section('title', 'Chi tiết đề tài')
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row mb-4">
-            <div class="col-12">
-                <a href="{{ route('user.topics') }}" class="btn btn-secondary mb-3">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
-            </div>
-        </div>
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('user.topics') }}">Đề tài</a></li>
+            <li class="breadcrumb-item active">{{ Str::limit($topic->name, 50) }}</li>
+        </ol>
+    </nav>
 
-        <div class="row">
-            <!-- Thông tin đề tài -->
-            <div class="col-lg-8 mb-4">
-                <div class="card-custom mb-4">
-                    <div class="card-header-custom">
-                        <h4 class="mb-0">{{ $topic->name }}</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h6 class="text-muted small fw-bold">GIẢNG VIÊN HƯỚNG DẪN</h6>
-                                <p class="fs-5 fw-bold">{{ $topic->lecturer }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="text-muted small fw-bold">NGÀY TẠO</h6>
-                                <p class="fs-5">{{ $topic->created_at?->format('d/m/Y') ?? 'N/A' }}</p>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <h6 class="text-muted small fw-bold">MÔ TẢ CHI TIẾT</h6>
-                            <div class="bg-light p-4 rounded-3 border-start border-4" style="border-color: var(--primary);">
-                                {!! nl2br($topic->description) !!}
-                            </div>
-                        </div>
-
-                        @if ($topic->goal)
-                            <div class="mb-4">
-                                <h6 class="text-muted small fw-bold">MỤC TIÊU</h6>
-                                <div class="bg-light p-4 rounded-3 border-start border-4" style="border-color: var(--success);">
-                                    {!! nl2br($topic->goal) !!}
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($topic->requirements)
-                            <div class="mb-0">
-                                <h6 class="text-muted small fw-bold">YÊU CẦU</h6>
-                                <div class="bg-light p-4 rounded-3 border-start border-4" style="border-color: var(--warning);">
-                                    {!! nl2br($topic->requirements) !!}
-                                </div>
-                            </div>
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Topic Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h4 class="mb-0 fw-bold text-white">{{ $topic->name }}</h4>
+                        @if($topic->assignedGroup)
+                            <span class="badge bg-danger">Đã có nhóm</span>
+                        @else
+                            <span class="badge bg-success">Còn trống</span>
                         @endif
                     </div>
                 </div>
+                <div class="card-body p-4">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded" style="background-color: #e3f2fd;">
+                                <p class="text-muted small mb-1">Giảng viên hướng dẫn</p>
+                                <p class="fw-semibold mb-0">{{ $topic->lecturer }}</p>
+                            </div>
+                        </div>
+                        @if($topic->subject)
+                            <div class="col-md-6">
+                                <div class="p-3 rounded" style="background-color: #f3e5f5;">
+                                    <p class="text-muted small mb-1">Môn học</p>
+                                    <p class="fw-semibold mb-0">{{ $topic->subject->name }}</p>
+                                    <p class="text-muted small mb-0">{{ $topic->subject->subject_code }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    @if($topic->description)
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3">Mô tả đề tài</h6>
+                            <p class="text-muted">{{ $topic->description }}</p>
+                        </div>
+                    @endif
+
+                    @if($topic->assignedGroup)
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Đề tài này đã được nhóm <strong>{{ $topic->assignedGroup->group_name }}</strong> đăng ký
+                        </div>
+                    @endif
+                </div>
             </div>
 
-            <!-- Đăng ký đề tài -->
-            <div class="col-lg-4">
-                <div class="card-custom">
-                    <div class="card-header-custom">
-                        <h5 class="mb-0">
-                            <i class="fas fa-clipboard-check"></i> Đăng ký đề tài
+            <!-- Available Classes -->
+            @if($topic->subject && $topic->subject->classes->isNotEmpty())
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-chalkboard text-primary me-2"></i>
+                            Các lớp học
                         </h5>
                     </div>
-                    <div class="card-body">
-                        @if ($myGroups->isEmpty())
-                            <div class="alert alert-info alert-custom">
-                                <i class="fas fa-info-circle"></i>
-                                <p class="mb-0 mt-2">Bạn chưa có nhóm nào. Vui lòng tạo hoặc tham gia nhóm trước.</p>
+                    <div class="card-body p-4">
+                        <div class="list-group list-group-flush">
+                            @foreach($topic->subject->classes as $class)
+                                <div class="list-group-item px-0 py-3 {{ $userClass && $userClass->class_id == $class->class_id ? 'bg-light' : '' }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ $class->class_name }}</h6>
+                                            <p class="text-muted small mb-0">
+                                                <i class="fas fa-users me-1"></i>
+                                                {{ $class->groups->count() }} nhóm
+                                            </p>
+                                        </div>
+                                        @if($userClass && $userClass->class_id == $class->class_id)
+                                            <span class="badge bg-primary">Lớp của bạn</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Register Action -->
+            @if(!$topic->assignedGroup)
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-clipboard-check text-success me-2"></i>
+                            Đăng ký đề tài
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if($myGroups->isEmpty())
+                            <div class="alert alert-warning border-0">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Bạn chưa có nhóm nào. Vui lòng tạo hoặc tham gia nhóm trước.
                             </div>
-                            <a href="{{ route('user.my-groups') }}" class="btn btn-primary-custom w-100">
-                                <i class="fas fa-users"></i> Tới nhóm của tôi
+                            <a href="{{ route('user.my-groups') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-users me-2"></i>
+                                Quản lý nhóm
                             </a>
                         @else
-                            <form action="{{ route('user.topic-register') }}" method="POST">
+                            <p class="text-muted small mb-3">Chọn nhóm để đăng ký đề tài này:</p>
+                            <form action="{{ route('user.register-topic') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="topic_id" value="{{ $topic->topic_id }}">
-
+                                
                                 <div class="mb-3">
-                                    <label for="group_id" class="form-label fw-bold">
-                                        <i class="fas fa-users"></i> Chọn nhóm
-                                    </label>
-                                    <select class="form-select form-select-lg @error('group_id') is-invalid @enderror" 
-                                        id="group_id" name="group_id" required>
+                                    <select name="group_id" class="form-select" required>
                                         <option value="">-- Chọn nhóm --</option>
-                                        @foreach ($myGroups as $group)
-                                            <option value="{{ $group->group_id }}" 
-                                                @if ($group->topic_id) disabled @endif>
-                                                {{ $group->group_name }}
-                                                @if ($group->topic_id)
-                                                    (Đã có đề tài)
-                                                @endif
-                                            </option>
+                                        @foreach($myGroups as $group)
+                                            @php
+                                                $isLeader = $group->leader_id == Auth::id();
+                                                $hasRegistered = in_array($group->group_id, $groupsRegistered);
+                                            @endphp
+                                            @if($isLeader && !$group->topic_id)
+                                                <option value="{{ $group->group_id }}" {{ $hasRegistered ? 'disabled' : '' }}>
+                                                    {{ $group->group_name }}
+                                                    @if($hasRegistered)
+                                                        (Đã đăng ký)
+                                                    @endif
+                                                </option>
+                                            @endif
                                         @endforeach
                                     </select>
-                                    @error('group_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Chỉ trưởng nhóm mới có thể đăng ký
+                                    </small>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary-custom w-100 btn-lg">
-                                    <i class="fas fa-check"></i> Gửi yêu cầu đăng ký
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Đăng ký ngay
                                 </button>
                             </form>
-
-                            <hr class="my-3">
-
-                            <h6 class="text-muted small fw-bold mb-3">NHÓM CỦA BẠN:</h6>
-                            <div class="list-group">
-                                @foreach ($myGroups as $group)
-                                    <div class="list-group-item py-2 px-0 border-0 border-bottom">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="fw-bold">{{ $group->group_name }}</small>
-                                            @if ($group->topic_id)
-                                                <span class="badge bg-success">Có đề tài</span>
-                                            @else
-                                                <span class="badge bg-secondary">Chưa có</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
                         @endif
                     </div>
                 </div>
-            </div>
+            @endif
+
+            <!-- Topic Requests -->
+            @if($topic->topic_requests->where('status', 'Pending')->isNotEmpty())
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-clock text-warning me-2"></i>
+                            Yêu cầu đăng ký
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-muted small mb-3">
+                            Có {{ $topic->topic_requests->where('status', 'Pending')->count() }} nhóm đang chờ duyệt
+                        </p>
+                        <div class="list-group list-group-flush">
+                            @foreach($topic->topic_requests->where('status', 'Pending') as $request)
+                                <div class="list-group-item px-0 py-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i>
+                                        {{ $request->group->group_name }}
+                                    </small>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- My Groups -->
+            @if($myGroups->isNotEmpty())
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-users text-primary me-2"></i>
+                            Nhóm của tôi
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="list-group list-group-flush">
+                            @foreach($myGroups as $group)
+                                <div class="list-group-item px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">{{ $group->group_name }}</h6>
+                                            <small class="text-muted d-block">
+                                                {{ $group->members->count() + 1 }} thành viên
+                                            </small>
+                                            @if($group->topic)
+                                                <small class="text-success d-block mt-1">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    Đã có đề tài
+                                                </small>
+                                            @endif
+                                        </div>
+                                        @if($group->leader_id == Auth::id())
+                                            <span class="badge bg-primary">Trưởng nhóm</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
-
-    <style>
-        .card-custom {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .card-header-custom {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: white;
-            padding: 20px;
-            border: none;
-        }
-
-        .btn-primary-custom {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary-custom:hover {
-            background: #4f46e5;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
-            color: white;
-        }
-    </style>
+</div>
 @endsection

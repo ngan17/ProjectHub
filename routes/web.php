@@ -72,42 +72,138 @@ Route::controller(TopicRequestController::class)->middleware('auth')->group(func
 });
 use App\Http\Controllers\UserDashboardController;
 
-Route::prefix('user')->middleware('auth')->group(function () {
-    Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
-    Route::get('/topics', [UserDashboardController::class, 'topics'])->name('user.topics');
-    Route::get('/topics/{id}', [UserDashboardController::class, 'topicDetail'])->name('user.topic-detail');
-    Route::get('/my_groups', [UserDashboardController::class, 'myGroups'])->name('user.my_groups');
-    Route::get('/groups/{id}', [UserDashboardController::class, 'groupDetail'])->name('user.group-detail');
-    Route::get('/invites', [UserDashboardController::class, 'invites'])->name('user.invites');
-    Route::post('/invites/{id}/accept', [UserDashboardController::class, 'acceptInvite'])->name('user.invite-accept');
-    Route::get('/invites', [UserDashboardController::class, 'invites'])->name('user.invites');
-    Route::post('/invites/{invite}/accept', [UserDashboardController::class, 'acceptInvite'])->name('user.accept-invite');
-    Route::post('/invites/{invite}/reject', [UserDashboardController::class, 'rejectInvite'])->name('user.reject-invite');
-    Route::post('/invites/{id}/reject', [UserDashboardController::class, 'rejectInvite'])->name('user.invite-reject');
-    Route::get('/join-requests', [UserDashboardController::class, 'joinRequests'])->name('user.join-requests');
-    Route::delete('/join-requests/{id}', [UserDashboardController::class, 'cancelRequest'])->name('user.request-cancel');
-    Route::post('/topics/register', [UserDashboardController::class, 'registerTopic'])->name('user.topic-register');
-    Route::get('/classes', [UserDashboardController::class, 'classes'])->name('user.classes');
-    Route::get('/classes/{id}', [UserDashboardController::class, 'classDetail'])->name('user.class-detail');
-    Route::get('/my_topics', [UserDashboardController::class, 'myTopics'])->name('my_topics');
-    Route::get('/subjects', [UserDashboardController::class, 'subjects'])->name('user.subjects');
-    Route::get('/groups/{group}/invite', [UserDashboardController::class, 'inviteMemberForm'])
-        ->name('user.invite-member-form');
-    Route::post('/invites/send', [UserDashboardController::class, 'sendInvite'])
-        ->name('user.send-invite');
-    Route::delete('/invites/{invite}/cancel', [UserDashboardController::class, 'cancelInvite'])
-        ->name('user.cancel-invite');
+Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
 
+    
+    // ============================================================
+    // DASHBOARD
+    // ============================================================
+    Route::get('/dashboard', [UserDashboardController::class, 'index'])
+        ->name('dashboard');
+    
+     Route::get('/groups/create', [UserDashboardController::class, 'createGroupForm'])
+        ->name('create_group');
+        Route::post('/groups', [UserDashboardController::class, 'storeGroup'])
+        ->name('store_group');
+        
+    // ============================================================
+    // TOPICS (Đề tài)
+    // ============================================================
+    
+    // Danh sách đề tài với filter
+    Route::get('/topics', [UserDashboardController::class, 'topics'])
+        ->name('topics');
+    
+    // Chi tiết đề tài
+    Route::get('/topics/{id}', [UserDashboardController::class, 'topicDetail'])
+        ->name('topic_detail');
+    
+    // Đăng ký đề tài cho nhóm
+    Route::post('/topics/register', [UserDashboardController::class, 'registerTopic'])
+        ->name('register_topic');
+    
+    // Hủy đăng ký đề tài
+    Route::delete('/topics/cancel/{requestId}', [UserDashboardController::class, 'cancelTopicRequest'])
+        ->name('cancel-topic-request');
+    
+    // Đề tài của tôi
+    Route::get('/my-topics', [UserDashboardController::class, 'myTopics'])
+        ->name('my_topics');
+    
+    
+    // ============================================================
+    // GROUPS (Nhóm)
+    // ============================================================
+    
+    // Danh sách nhóm của tôi
+    Route::get('/groups', [UserDashboardController::class, 'myGroups'])
+        ->name('my_groups');
+    
+    // Chi tiết nhóm
+    Route::get('/groups/{id}', [UserDashboardController::class, 'groupDetail'])
+        ->name('group_detail');
+    
+    
+    // ============================================================
+    // INVITATIONS (Lời mời)
+    // ============================================================
+    
+    // Form mời thành viên vào nhóm (chỉ leader)
+    Route::get('/groups/{groupId}/invite', [UserDashboardController::class, 'inviteMemberForm'])
+        ->name('invite-member');
+    
+    // Gửi lời mời thành viên
+    Route::post('/invites/send', [UserDashboardController::class, 'sendInvite'])
+        ->name('send-invite');
+    
+    // Hủy lời mời (chỉ leader)
+    Route::delete('/invites/{inviteId}', [UserDashboardController::class, 'cancelInvite'])
+        ->name('cancel-invite');
+    
+    // Danh sách lời mời nhận được
+    Route::get('/invites', [UserDashboardController::class, 'invites'])
+        ->name('invites');
+    
+    // Chấp nhận lời mời
+    Route::post('/invites/{id}/accept', [UserDashboardController::class, 'acceptInvite'])
+        ->name('accept-invite');
+    
+    // Từ chối lời mời
+    Route::post('/invites/{id}/reject', [UserDashboardController::class, 'rejectInvite'])
+        ->name('reject-invite');
+    
+    
+    // ============================================================
+    // JOIN REQUESTS (Yêu cầu tham gia)
+    // ============================================================
+    
     // Gửi yêu cầu tham gia nhóm
     Route::post('/join-requests/send', [UserDashboardController::class, 'sendJoinRequest'])
-        ->name('user.send-join-request');
-
-    // Quản lý yêu cầu tham gia nhóm (dành cho leader)
-    Route::get('/groups/{group}/join-requests', [UserDashboardController::class, 'groupJoinRequests'])
-        ->name('user.group-join-requests');
-    Route::post('/join-requests/{request}/approve', [UserDashboardController::class, 'approveJoinRequest'])
-        ->name('user.approve-join-request');
-    Route::post('/join-requests/{request}/reject', [UserDashboardController::class, 'rejectJoinRequest'])
-        ->name('user.reject-join-request');
-    Route::get('/subjects/{id}', [UserDashboardController::class, 'subjectDetail'])->name('user.subject-detail');
+        ->name('send-join-request');
+    
+    // Danh sách yêu cầu tham gia đã gửi
+    Route::get('/join-requests', [UserDashboardController::class, 'joinRequests'])
+        ->name('join-requests');
+    
+    // Hủy yêu cầu tham gia
+    Route::delete('/join-requests/{id}', [UserDashboardController::class, 'cancelRequest'])
+        ->name('cancel-request');
+    
+    // Danh sách yêu cầu tham gia nhóm (cho leader xem)
+    Route::get('/groups/{groupId}/join-requests', [UserDashboardController::class, 'groupJoinRequests'])
+        ->name('group-join-requests');
+    
+    // Chấp nhận yêu cầu tham gia (chỉ leader)
+    Route::post('/join-requests/{requestId}/approve', [UserDashboardController::class, 'approveJoinRequest'])
+        ->name('approve-join-request');
+    
+    // Từ chối yêu cầu tham gia (chỉ leader)
+    Route::post('/join-requests/{requestId}/reject', [UserDashboardController::class, 'rejectJoinRequest'])
+        ->name('reject-join-request');
+    
+    
+    // ============================================================
+    // CLASSES (Lớp học)
+    // ============================================================
+    
+    // Danh sách lớp học
+    Route::get('/classes', [UserDashboardController::class, 'classes'])
+        ->name('classes');
+    
+    // Chi tiết lớp học
+    Route::get('/classes/{id}', [UserDashboardController::class, 'classDetail'])
+        ->name('class-detail');
+    
+    
+    // ============================================================
+    // SUBJECTS (Môn học)
+    // ============================================================
+    
+    // Danh sách môn học
+    Route::get('/subjects', [UserDashboardController::class, 'subjects'])
+        ->name('subjects');
+    
+    // Chi tiết môn học
+    Route::get('/subjects/{id}', [UserDashboardController::class, 'subjectDetail'])
+        ->name('subject-detail');
 });

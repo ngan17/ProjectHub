@@ -1,292 +1,260 @@
-@extends('user.layouts.app')
-@section('page-title', 'Dashboard')
-@section('title', 'Dashboard - Sinh viên')
+@extends('layouts.user')
+
+@section('title', 'Dashboard')
 
 @section('content')
-    <div class="container-fluid py-4">
-        <!-- Header -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="fw-bold text-primary">
-                    <i class="fas fa-tachometer-alt"></i> Xin chào, {{ Auth::user()->name }}!
-                </h2>
-                <div class="mt-2">
-                    <p class="text-muted mb-1">
-                        <i class="fas fa-graduation-cap"></i>
-                        @if ($userClass)
-                            <strong>{{ $userClass->class_name }}</strong>
-                            @if ($userSubject)
-                                - <strong>{{ $userSubject->subject_name }}</strong> ({{ $userSubject->subject_code }})
-                            @endif
-                        @else
-                            <span class="badge bg-warning">Chưa được xếp lớp</span>
-                        @endif
-                    </p>
-                </div>
-            </div>
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+        <div class="card-body p-4 text-white">
+            <h1 class="mb-2 fw-bold">Xin chào, {{ Auth::user()->name }}! 👋</h1>
+            <p class="mb-0 opacity-75">Chào mừng bạn đến với hệ thống quản lý đề tài và nhóm học tập</p>
         </div>
+    </div>
 
-        <!-- Thống kê - 4 cột -->
-        <div class="row mb-4">
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm bg-primary text-white h-100">
-                    <div class="card-body text-center">
-                        <h3 class="mb-2">{{ $myGroups->count() }}</h3>
-                        <p class="mb-0"><i class="fas fa-users"></i> Nhóm của tôi</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm bg-success text-white h-100">
-                    <div class="card-body text-center">
-                        <h3 class="mb-2">{{ $myTopics->count() }}</h3>
-                        <p class="mb-0"><i class="fas fa-book"></i> Đề tài của nhóm</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm bg-warning text-white h-100">
-                    <div class="card-body text-center">
-                        <h3 class="mb-2">{{ $pendingInvites }}</h3>
-                        <p class="mb-0"><i class="fas fa-envelope"></i> Lời mời chưa xử lý</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-3">
-                <div class="card border-0 shadow-sm bg-info text-white h-100">
-                    <div class="card-body text-center">
-                        <h3 class="mb-2">{{ $pendingRequests }}</h3>
-                        <p class="mb-0"><i class="fas fa-hourglass-half"></i> Yêu cầu chờ duyệt</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Nhóm của tôi & Lời mời gần đây -->
-        <div class="row mb-4">
-            <!-- Nhóm của tôi -->
-            <div class="col-lg-6 mb-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h5 class="mb-0">
-                            <i class="fas fa-users"></i> Nhóm của tôi
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @if ($myGroups->isEmpty())
-                            <p class="text-muted text-center py-4">
-                                <i class="fas fa-inbox"></i> Bạn chưa có nhóm nào
-                            </p>
-                            <a href="{{ route('user.my_groups') }}" class="btn btn-primary w-100">
-                                <i class="fas fa-plus"></i> Tham gia hoặc tạo nhóm
-                            </a>
-                        @else
-                            <div class="list-group">
-                                @foreach ($myGroups->take(5) as $group)
-                                    <a href="{{ route('user.group-detail', $group->group_id) }}" 
-                                       class="list-group-item list-group-item-action border-bottom py-3 hover-shadow transition">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1 fw-bold">{{ $group->group_name }}</h6>
-                                                <small class="text-muted d-block mb-1">
-                                                    <i class="fas fa-user-circle"></i> Trưởng: {{ $group->leader->name }}
-                                                </small>
-                                                @if ($group->class)
-                                                    <small class="text-muted d-block">
-                                                        <i class="fas fa-graduation-cap"></i> {{ $group->class->class_name }}
-                                                    </small>
-                                                @endif
-                                            </div>
-                                            <div class="text-end">
-                                                @if ($group->topic_id)
-                                                    <span class="badge bg-success ms-2">
-                                                        <i class="fas fa-check-circle"></i> Có đề tài
-                                                    </span>
-                                                @else
-                                                    <span class="badge bg-secondary ms-2">
-                                                        <i class="fas fa-times-circle"></i> Chưa có
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <small class="text-muted mt-2 d-block">
-                                            {{ $group->members->count() }} thành viên
-                                        </small>
-                                    </a>
-                                @endforeach
-                            </div>
-                            @if ($myGroups->count() > 5)
-                                <a href="{{ route('user.my-groups') }}" class="btn btn-link mt-3 d-block text-center">
-                                    Xem tất cả <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @endif
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lời mời gần đây -->
-            <div class="col-lg-6 mb-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-warning text-white py-3">
-                        <h5 class="mb-0">
-                            <i class="fas fa-envelope"></i> Lời mời gần đây
-                            @if ($pendingInvites > 0)
-                                <span class="badge bg-danger float-end">{{ $pendingInvites }} mới</span>
-                            @endif
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        @php
-                            $recentInvites = Auth::user()->invites()
-                                ->with('group', 'invitedBy')
-                                ->latest()
-                                ->limit(5)
-                                ->get();
-                        @endphp
-                        
-                        @if ($recentInvites->isEmpty())
-                            <p class="text-muted text-center py-4">
-                                <i class="fas fa-inbox"></i> Không có lời mời nào
-                            </p>
-                        @else
-                            <div class="list-group">
-                                @foreach ($recentInvites as $invite)
-                                    <div class="list-group-item border-bottom py-3">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-1 fw-bold">{{ $invite->group->group_name }}</h6>
-                                                <small class="text-muted d-block mb-2">
-                                                    <i class="fas fa-user"></i> Từ: {{ $invite->invitedBy->name ?? 'N/A' }}
-                                                </small>
-                                                @if ($invite->status === 'Pending')
-                                                    <div class="btn-group btn-group-sm" role="group">
-                                                        <form action="{{ route('user.invite-accept', $invite->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-success">
-                                                                <i class="fas fa-check"></i> Chấp nhận
-                                                            </button>
-                                                        </form>
-                                                        <form action="{{ route('user.invite-reject', $invite->id) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                                <i class="fas fa-times"></i> Từ chối
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                @else
-                                                    <span class="badge bg-@if($invite->status === 'Accepted')success @else danger @endif">
-                                                        @if($invite->status === 'Accepted')
-                                                            <i class="fas fa-check"></i> Đã chấp nhận
-                                                        @else
-                                                            <i class="fas fa-times"></i> Đã từ chối
-                                                        @endif
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @if (Auth::user()->invites()->count() > 5)
-                                <a href="{{ route('user.invites') }}" class="btn btn-link mt-3 d-block text-center">
-                                    Xem tất cả <i class="fas fa-arrow-right"></i>
-                                </a>
-                            @endif
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Đề tài gợi ý -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-success text-white py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-book"></i> Các đề tài khác nhau
-                            </h5>
-                            <a href="{{ route('user.topics') }}" class="btn btn-sm btn-light">
-                                Xem tất cả
-                            </a>
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Nhóm của tôi</p>
+                            <h2 class="mb-0 fw-bold text-primary">{{ $myGroups->count() }}</h2>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-users fa-2x text-primary"></i>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @forelse ($suggestedTopics as $topic)
-                                <div class="col-lg-4 col-md-6 mb-3">
-                                    <div class="card h-100 border-0 shadow-sm transition hover-shadow">
-                                        <div class="card-body d-flex flex-column">
-                                            <h6 class="card-title text-primary mb-2">
-                                                {{ Str::limit($topic->name, 40) }}
-                                            </h6>
-                                            <p class="card-text small text-muted flex-grow-1 mb-2">
-                                                {{ Str::limit($topic->description, 80) }}
-                                            </p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-secondary">
-                                                    <i class="fas fa-user-tie"></i> {{ Str::limit($topic->lecturer, 20) }}
-                                                </small>
-                                                @if ($topic->subject)
-                                                    <small class="badge bg-light text-dark">
-                                                        {{ $topic->subject->subject_code }}
-                                                    </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="card-footer bg-transparent border-top">
-                                            <a href="{{ route('user.topic-detail', $topic->topic_id) }}" 
-                                               class="btn btn-sm btn-primary w-100">
-                                                <i class="fas fa-eye"></i> Xem chi tiết
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-12 text-center py-5">
-                                    <i class="fas fa-book-open text-muted" style="font-size: 2rem;"></i>
-                                    <p class="text-muted mt-3">Không có đề tài nào</p>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
+                    <a href="{{ route('user.my_groups') }}" class="btn btn-sm btn-link text-primary p-0 mt-3">
+                        Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- Links nhanh -->
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{{ route('user.my_groups') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-users"></i> Tất cả nhóm của tôi
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Đề tài</p>
+                            <h2 class="mb-0 fw-bold text-success">{{ $myTopics->count() }}</h2>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-book fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <a href="{{ route('user.my_topics') }}" class="btn btn-sm btn-link text-success p-0 mt-3">
+                        Xem đề tài <i class="fas fa-arrow-right ms-1"></i>
                     </a>
-                    <a href="{{ route('user.topics') }}" class="btn btn-outline-success">
-                        <i class="fas fa-book"></i> Xem tất cả đề tài
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Lời mời</p>
+                            <h2 class="mb-0 fw-bold text-warning">{{ $pendingInvites }}</h2>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-envelope fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <a href="{{ route('user.invites') }}" class="btn btn-sm btn-link text-warning p-0 mt-3">
+                        Xem lời mời <i class="fas fa-arrow-right ms-1"></i>
                     </a>
-                    <a href="{{ route('user.classes') }}" class="btn btn-outline-info">
-                        <i class="fas fa-graduation-cap"></i> Các lớp học
-                    </a>
-                    <a href="{{ route('user.subjects') }}" class="btn btn-outline-warning">
-                        <i class="fas fa-list"></i> Các môn học
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-2">Yêu cầu</p>
+                            <h2 class="mb-0 fw-bold text-info">{{ $pendingRequests }}</h2>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-paper-plane fa-2x text-info"></i>
+                        </div>
+                    </div>
+                    <a href="{{ route('user.join-requests') }}" class="btn btn-sm btn-link text-info p-0 mt-3">
+                        Xem yêu cầu <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <style>
-        .transition {
-            transition: all 0.3s ease;
-        }
-        .hover-shadow:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
-        }
-        .list-group-item:hover {
-            background-color: #f8f9fa;
-        }
-    </style>
+    <!-- My Groups Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-users text-primary me-2"></i>
+                Nhóm của tôi
+            </h5>
+            <a href="{{ route('user.my_groups') }}" class="btn btn-sm btn-link text-primary">
+                Xem tất cả
+            </a>
+        </div>
+        <div class="card-body p-4">
+            @if($myGroups->isEmpty())
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                    <p class="text-muted mb-3">Bạn chưa tham gia nhóm nào</p>
+                    <a href="{{ route('user.topics') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>
+                        Tìm đề tài
+                    </a>
+                </div>
+            @else
+                <div class="row g-3">
+                    @foreach($myGroups->take(3) as $group)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border h-100 hover-shadow">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="mb-0 fw-bold">{{ $group->group_name }}</h6>
+                                        @if($group->leader_id == Auth::id())
+                                            <span class="badge bg-primary">Trưởng nhóm</span>
+                                        @endif
+                                    </div>
+                                    
+                                    @if($group->topic)
+                                        <div class="mb-2">
+                                            <small class="text-muted d-block text-truncate" style="max-width: 100%;" title="{{ $group->topic->name }}">
+                                                <i class="fas fa-book text-success me-1"></i>
+                                                {{ Str::limit($group->topic->name, 40) }}
+                                            </small>
+                                        </div>
+                                    @endif
+
+                                    @if($group->class)
+                                        <small class="text-muted d-block mb-2">
+                                            <i class="fas fa-chalkboard text-info me-1"></i>
+                                            {{ $group->class->class_name }}
+                                        </small>
+                                    @endif
+
+                                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user-friends me-1"></i>
+                                            {{ $group->members->count() + 1 }} thành viên
+                                        </small>
+                                        <a href="{{ route('user.group_detail', $group->group_id) }}" class="btn btn-sm btn-link text-primary p-0">
+                                            Chi tiết <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- My Topics Section -->
+    @if($myTopics->isNotEmpty())
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-book text-success me-2"></i>
+                    Đề tài của tôi
+                </h5>
+                <a href="{{ route('user.my_topics') }}" class="btn btn-sm btn-link text-primary">
+                    Xem tất cả
+                </a>
+            </div>
+            <div class="card-body p-4">
+                <div class="list-group list-group-flush">
+                    @foreach($myTopics->take(3) as $topic)
+                        <div class="list-group-item px-0 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2 fw-bold">{{ $topic->name }}</h6>
+                                    <p class="text-muted mb-2 small" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ $topic->description }}
+                                    </p>
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-chalkboard-teacher me-1"></i>
+                                            {{ $topic->lecturer }}
+                                        </small>
+                                        @if($topic->subject)
+                                            <small class="text-muted">
+                                                <i class="fas fa-book me-1"></i>
+                                                {{ $topic->subject->name }}
+                                            </small>
+                                        @endif
+                                    </div>
+                                </div>
+                                <a href="{{ route('user.topic_detail', $topic->topic_id) }}" class="btn btn-sm btn-link text-primary ms-3">
+                                    Chi tiết
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Suggested Topics -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-lightbulb text-warning me-2"></i>
+                Đề tài gợi ý
+            </h5>
+            <a href="{{ route('user.topics') }}" class="btn btn-sm btn-link text-primary">
+                Xem tất cả đề tài
+            </a>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                @foreach($suggestedTopics as $topic)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border h-100 hover-shadow">
+                            <div class="card-body">
+                                <h6 class="mb-2 fw-bold" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 48px;">
+                                    {{ $topic->name }}
+                                </h6>
+                                <p class="text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 63px;">
+                                    {{ $topic->description }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                    @if($topic->assignedGroup)
+                                        <span class="badge bg-secondary">Đã có nhóm</span>
+                                    @else
+                                        <span class="badge bg-success">Còn trống</span>
+                                    @endif
+                                    <a href="{{ route('user.topic_detail', $topic->topic_id) }}" class="btn btn-sm btn-link text-primary p-0">
+                                        Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s ease;
+    }
+    .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+    }
+</style>
 @endsection
