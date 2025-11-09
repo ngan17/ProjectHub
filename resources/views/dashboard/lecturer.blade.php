@@ -4,18 +4,18 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4 text-success">🎓 Bảng điều khiển Giảng viên</h2>
+    <h2 class="mb-4 text-success"> Bảng điều khiển Giảng viên</h2>
 
     <div class="row text-center">
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3">
-                <h5>📘 Đề tài được giao</h5>
+                <h5> Đề tài được giao</h5>
                 <h3>{{ $stats['assigned_topics'] }}</h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3">
-                <h5>🕒 Đang chờ duyệt</h5>
+                <h5> Đang chờ duyệt</h5>
                 <h3>{{ $stats['pending_requests'] }}</h3>
             </div>
         </div>
@@ -29,7 +29,7 @@
 
     <hr class="my-4">
 
-    <h5>📋 Danh sách yêu cầu của sinh viên</h5>
+    <h5>Danh sách yêu cầu của sinh viên</h5>
     <table class="table table-striped">
         <thead>
             <tr>

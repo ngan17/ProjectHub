@@ -4,12 +4,12 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4 text-primary">📊 Bảng điều khiển Quản trị viên</h2>
+    <h2 class="mb-4 text-primary">Bảng điều khiển Quản trị viên</h2>
 
     <div class="row text-center">
         <div class="col-md-3">
             <div class="card shadow-sm border-0 p-3">
-                <h5>👥 Người dùng</h5>
+                <h5>Người dùng</h5>
                 <h3>{{ $stats['total_users'] }}</h3>
             </div>
         </div>
@@ -37,7 +37,7 @@
 
     <div class="row">
         <div class="col-md-6">
-            <h5>🆕 Người dùng mới nhất</h5>
+            <h5> Người dùng mới nhất</h5>
             <ul class="list-group">
                 @foreach($recentUsers as $user)
                     <li class="list-group-item d-flex justify-content-between">

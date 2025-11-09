@@ -158,15 +158,15 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     // ============================================================
     
     // Gửi yêu cầu tham gia nhóm
-    Route::post('/join-requests/send', [UserDashboardController::class, 'sendJoinRequest'])
+    Route::post('/join_requests/send', [UserDashboardController::class, 'sendJoinRequest'])
         ->name('send-join-request');
     
     // Danh sách yêu cầu tham gia đã gửi
-    Route::get('/join-requests', [UserDashboardController::class, 'joinRequests'])
+    Route::get('/join_requests', [UserDashboardController::class, 'joinRequests'])
         ->name('join-requests');
     
     // Hủy yêu cầu tham gia
-    Route::delete('/join-requests/{id}', [UserDashboardController::class, 'cancelRequest'])
+    Route::delete('/join_requests/{id}', [UserDashboardController::class, 'cancelRequest'])
         ->name('cancel-request');
     
     // Danh sách yêu cầu tham gia nhóm (cho leader xem)

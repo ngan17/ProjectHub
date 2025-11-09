@@ -812,7 +812,7 @@ class UserDashboardController extends Controller
         $currentMemberIds = $group->members->pluck('user_id')
             ->push($group->leader_id);
 
-        return \App\Models\User::whereHas('classes', function ($query) use ($group) {
+        return \App\Models\User::where('role', 'student')->whereHas('classes', function ($query) use ($group) {
             $query->where('class_sections.class_id', $group->class_id);
         })
             ->whereNotIn('user_id', $currentMemberIds)

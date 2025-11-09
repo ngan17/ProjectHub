@@ -8,8 +8,8 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('user.my-groups') }}">Nhóm của tôi</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('user.group.detail', $group->group_id) }}">{{ $group->group_name }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('user.my_groups') }}">Nhóm của tôi</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('user.group_detail', $group->group_id) }}">{{ $group->group_name }}</a></li>
             <li class="breadcrumb-item active">Mời thành viên</li>
         </ol>
     </nav>
@@ -70,7 +70,7 @@
                                             </td>
                                             <td>{{ $user->email }}</td>
                                             <td class="text-center">
-                                                <form action="{{ route('user.invite.send') }}" method="POST" class="d-inline">
+                                                <form action="{{ route('user.send-invite') }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <input type="hidden" name="group_id" value="{{ $group->group_id }}">
                                                     <input type="hidden" name="member_id" value="{{ $user->user_id }}">

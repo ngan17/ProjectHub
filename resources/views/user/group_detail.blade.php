@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <!-- Back Button -->
     <div class="mb-3">
-        <a href="{{ route('user.my-groups') }}" class="btn btn-link text-primary p-0">
+        <a href="{{ route('user.my_groups') }}" class="btn btn-link text-primary p-0">
             <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách nhóm
         </a>
     </div>
@@ -34,7 +34,7 @@
                 @if(Auth::id() == $group->leader_id)
                     <div class="col-lg-4 mt-3 mt-lg-0">
                         <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                            <a href="{{ route('user.invite.form', $group->group_id) }}" 
+                            <a href="{{ route('user.invite-member', $group->group_id) }}" 
                                class="btn btn-light">
                                 <i class="fas fa-user-plus me-2"></i>
                                 Mời thành viên
@@ -86,7 +86,7 @@
                                 @endif
                             </div>
 
-                            <a href="{{ route('user.topic.detail', $group->topic->topic_id) }}" 
+                            <a href="{{ route('user.topic_detail', $group->topic->topic_id) }}" 
                                class="btn btn-primary">
                                 <i class="fas fa-info-circle me-2"></i>
                                 Xem chi tiết đề tài
@@ -139,7 +139,7 @@
                             @endif
                         @endif
 
-                        <a href="{{ route('user.class.detail', $group->class->class_id) }}" 
+                        <a href="{{ route('user.class-detail', $group->class->class_id) }}" 
                            class="btn btn-primary">
                             <i class="fas fa-external-link-alt me-2"></i>
                             Xem thông tin lớp

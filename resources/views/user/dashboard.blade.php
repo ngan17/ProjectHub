@@ -7,7 +7,7 @@
     <!-- Welcome Section -->
     <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
         <div class="card-body p-4 text-white">
-            <h1 class="mb-2 fw-bold">Xin chào, {{ Auth::user()->name }}! 👋</h1>
+            <h1 class="mb-2 fw-bold">Xin chào, {{ Auth::user()->name }}! </h1>
             <p class="mb-0 opacity-75">Chào mừng bạn đến với hệ thống quản lý đề tài và nhóm học tập</p>
         </div>
     </div>
