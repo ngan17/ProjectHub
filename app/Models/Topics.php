@@ -32,5 +32,10 @@ class Topics extends Model
 {
     return $this->hasMany(Topic_requests::class, 'topic_id', 'topic_id');
 }
+    public function scopeByClass($query, $classId)
+    {
+        return $query->where('class_id', $classId);
+    }
+
 
 }

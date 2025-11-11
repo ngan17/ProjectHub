@@ -113,7 +113,7 @@ class UserDashboardController extends Controller
             'topic',
             'myGroups',
             'userClasses',
-             'userClass',
+            'userClass',
             'groupsRegistered'
         ));
     }
@@ -214,7 +214,11 @@ class UserDashboardController extends Controller
             ->withCount('members')
             ->paginate(9);
 
-        $userClasses = $user->classes->first();
+   $userClasses = ClassSection::whereHas('users', function($query) use ($user) {
+            $query->where('users.user_id', $user->user_id);
+        })
+        ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
+        ->get();
 
         return view('user.my_groups', compact('groups', 'userClasses'));
     }
@@ -266,7 +270,7 @@ class UserDashboardController extends Controller
             'class_id' => $validated['class_id'],
         ]);
 
-        return redirect()->route('user.group-detail', $group->group_id)
+        return redirect()->route('user.group_detail', $group->group_id)
             ->with('success', 'Tạo nhóm thành công! Bạn có thể mời thêm thành viên.');
     }
 
@@ -610,25 +614,33 @@ class UserDashboardController extends Controller
         $query = ClassSection::with(['subject.lecturer', 'groups'])
             ->withCount('groups');
 
-        // Filter theo môn học nếu có
+        // Lọc theo môn học
         if ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
         }
 
-        // Search theo tên lớp
+        // Tìm kiếm theo tên lớp
         if ($request->filled('search')) {
             $query->where('class_name', 'like', '%' . $request->search . '%');
         }
 
+        // Phân trang
         $classes = $query->paginate(12);
         $classes->appends($request->query());
 
-        $userClasses = Auth::user()->classes;
-        $subjects = Subject::all();
+        $user = Auth::user();
+
+        // Lấy danh sách class_id mà user đã tham gia (convert to array)
+     $user = Auth::user();
+    $userClasses = DB::table('user_classes')
+        ->where('user_id', $user->user_id)
+        ->pluck('class_id')
+        ->toArray();
+
+    $subjects = Subject::all();
 
         return view('user.classes', compact('classes', 'userClasses', 'subjects'));
     }
-
     /**
      * Chi tiết lớp học
      */
@@ -830,5 +842,12 @@ class UserDashboardController extends Controller
             ->with('member')
             ->latest()
             ->get();
+    }
+    /**
+     * Tạo thông báo 
+     */
+    private  function createNotification($userId)
+    {
+    
     }
 }

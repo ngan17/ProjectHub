@@ -21,7 +21,7 @@
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3">
-                <h5>⏳ Yêu cầu tham gia</h5>
+                <h5> Yêu cầu tham gia</h5>
                 <h3>{{ $stats['pending_join_requests'] }}</h3>
             </div>
         </div>

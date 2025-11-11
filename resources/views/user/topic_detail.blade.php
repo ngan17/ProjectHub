@@ -119,7 +119,7 @@
                             </a>
                         @else
                             <p class="text-muted small mb-3">Chọn nhóm để đăng ký đề tài này:</p>
-                            <form action="{{ route('user.register-topic') }}" method="POST">
+                            <form action="{{ route('user.register_topic') }}" method="POST">
                                 @csrf
                                 <input type="hidden" name="topic_id" value="{{ $topic->topic_id }}">
                                 

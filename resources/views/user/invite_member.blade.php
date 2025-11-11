@@ -114,7 +114,7 @@
                                         <i class="fas fa-clock me-1"></i>
                                         {{ $invite->created_at->diffForHumans() }}
                                     </small>
-                                    <form action="{{ route('user.invite.cancel', $invite->id) }}" method="POST">
+                                    <form action="{{ route('user.cancel-invite', $invite->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger w-100"

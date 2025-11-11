@@ -6,7 +6,7 @@
 <div class="container-fluid">
     <!-- Back Button -->
     <div class="mb-3">
-        <a href="{{ route('user.group.detail', $group->group_id) }}" class="btn btn-link text-primary p-0">
+        <a href="{{ route('user.group_detail', $group->group_id) }}" class="btn btn-link text-primary p-0">
             <i class="fas fa-arrow-left me-2"></i> Quay lại nhóm
         </a>
     </div>

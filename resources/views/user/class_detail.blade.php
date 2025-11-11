@@ -104,7 +104,7 @@
                                         </div>
                                     @endif
 
-                                    <a href="{{ route('user.topic.detail', $topic->topic_id) }}" class="btn btn-outline-primary btn-sm w-100 mt-3">
+                                    <a href="{{ route('user.topic_detail', $topic->topic_id) }}" class="btn btn-outline-primary btn-sm w-100 mt-3">
                                         Xem chi tiết
                                     </a>
                                 </div>
@@ -154,7 +154,7 @@
                                         </p>
                                     @endif
 
-                                    <a href="{{ route('user.group.detail', $group->group_id) }}" class="btn btn-outline-primary btn-sm w-100">
+                                    <a href="{{ route('user.group_detail', $group->group_id) }}" class="btn btn-outline-primary btn-sm w-100">
                                         Xem chi tiết
                                     </a>
                                 </div>

@@ -23,7 +23,7 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light text-center">
                             <tr>
-                                <th>#</th>
+                                <th>STT</th>
                                 <th>Tên đề tài</th>
                                 <th>Tên nhóm</th>
                                 <th>Người gửi</th>
@@ -36,7 +36,7 @@
                             @foreach($topicRequests as $index => $req)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td>{{ $req->topic->topic_name ?? '—' }}</td>
+                                    <td>{{ $req->topic->name ?? '—' }}</td>
                                     <td>{{ $req->group->group_name ?? '—' }}</td>
                                     <td>{{ $req->user->name ?? '—' }}</td>
                                     <td class="text-center">

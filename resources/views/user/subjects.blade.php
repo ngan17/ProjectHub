@@ -53,7 +53,7 @@
                         <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
                             <p class="mb-1 opacity-75 small">{{ $subject->subject_code }}</p>
                             <h5 class="mb-0 fw-bold" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 60px;">
-                                {{ $subject->name }}
+                                {{ $subject->subject_name }}
                             </h5>
                         </div>
 
@@ -92,7 +92,7 @@
 
                         <!-- Card Footer -->
                         <div class="card-footer bg-white border-top-0 p-4 pt-0">
-                            <a href="{{ route('user.subject.detail', $subject->subject_id) }}" 
+                            <a href="{{ route('user.subject_detail', $subject->subject_id) }}" 
                                class="btn btn-primary w-100">
                                 <i class="fas fa-eye me-2"></i>
                                 Xem chi tiết

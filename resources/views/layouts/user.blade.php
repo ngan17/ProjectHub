@@ -215,7 +215,8 @@
                         {{ Auth::user()->name ?? 'User' }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Hồ sơ</a></li>
+                       <li><a class="dropdown-item" href="{{ route('users.profile')}}"><i class="fas fa-user"></i> Hồ sơ</a></li>
+
                         <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Cài đặt</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>

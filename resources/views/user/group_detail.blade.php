@@ -39,7 +39,7 @@
                                 <i class="fas fa-user-plus me-2"></i>
                                 Mời thành viên
                             </a>
-                            <a href="{{ route('user.group.join-requests', $group->group_id) }}" 
+                            <a href="{{ route('user.group-join-requests', $group->group_id) }}" 
                                class="btn btn-light">
                                 <i class="fas fa-inbox me-2"></i>
                                 Yêu cầu tham gia
@@ -139,7 +139,7 @@
                             @endif
                         @endif
 
-                        <a href="{{ route('user.class-detail', $group->class->class_id) }}" 
+                        <a href="{{ route('user.class_detail', $group->class->class_id) }}" 
                            class="btn btn-primary">
                             <i class="fas fa-external-link-alt me-2"></i>
                             Xem thông tin lớp
@@ -204,7 +204,7 @@
                     @endif
 
                     @if(Auth::id() == $group->leader_id)
-                        <a href="{{ route('user.invite.form', $group->group_id) }}" 
+                        <a href="{{ route('user.invite-member', $group->group_id) }}" 
                            class="btn btn-success w-100 mt-3">
                             <i class="fas fa-user-plus me-2"></i>
                             Mời thêm thành viên

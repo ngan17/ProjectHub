@@ -224,7 +224,7 @@
                     Bắt đầu hành trình học tập cùng bạn bè của bạn
                 </p>
             </div>
-            <a href="{{ route('user.my-groups') }}" class="btn btn-light btn-lg">
+            <a href="{{ route('user.my_groups') }}" class="btn btn-light btn-lg">
                 <i class="fas fa-arrow-left me-2"></i> Quay lại
             </a>
         </div>
@@ -351,7 +351,7 @@
 
                 <!-- Buttons -->
                 <div class="d-flex gap-3 justify-content-end mt-4 pt-3">
-                    <a href="{{ route('user.my-groups') }}" class="btn-cancel">
+                    <a href="{{ route('user.my_groups') }}" class="btn-cancel">
                         <i class="fas fa-times me-2"></i>
                         Hủy bỏ
                     </a>

@@ -52,7 +52,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
             'role' => 'required|in:student,leader,lecturer,admin',
-            'class' => 'nullable|string|max:100',
+          
         ]);
 
         $user->update($validated);
@@ -67,7 +67,10 @@ class UserController extends Controller
 
     public function profile()
     {
+        $user=Auth::user();
+        if( $user->role=='student')
         return view('users.profile', ['user' => Auth::user()]);
+        return view('users.profile-admin', ['user' => Auth::user()]);
     }
 
     public function updateProfile(Request $request)
@@ -77,7 +80,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
-            'class' => 'nullable|string|max:100',
+           
             'current_password' => 'nullable|required_with:new_password',
             'new_password' => 'nullable|string|min:8|confirmed',
         ]);

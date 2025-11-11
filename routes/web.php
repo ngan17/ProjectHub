@@ -43,7 +43,7 @@ Route::get('/requests', function () {
 
 Route::get('/', fn() => redirect('/login'));
 
-// 🔐 Auth routes
+//  Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     Route::get('/profile', [UserController::class, 'profile'])->name('users.profile');
     Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('users.updateProfile');
+    Route::get('/profile-admin', [UserController::class, 'profile'])->name('users.profile-admin');
 });
 use Illuminate\Support\Facades\Auth;
 
@@ -65,7 +66,7 @@ use App\Http\Controllers\TopicRequestController;
 Route::controller(TopicRequestController::class)->middleware('auth')->group(function () {
     Route::get('/topic-requests', 'index')->name('topic_requests.index');
 
-    // Sửa lỗi cú pháp: name(name: ...) → name(...)
+
     Route::patch('/topic-requests/{topic_request}/approve', 'approve')->name('topic_requests.approve');
     Route::patch('/topic-requests/{topic_request}/reject', 'reject')->name('topic_requests.reject');
     Route::delete('/topic-requests/{topic_request}', 'destroy')->name('topic_requests.destroy');
@@ -192,7 +193,7 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     
     // Chi tiết lớp học
     Route::get('/classes/{id}', [UserDashboardController::class, 'classDetail'])
-        ->name('class-detail');
+        ->name('class_detail');
     
     
     // ============================================================
@@ -205,5 +206,5 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     
     // Chi tiết môn học
     Route::get('/subjects/{id}', [UserDashboardController::class, 'subjectDetail'])
-        ->name('subject-detail');
+        ->name('subject_detail');
 });

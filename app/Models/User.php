@@ -4,6 +4,10 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\ClassSection;
+use App\Models\Groups;
+use App\Models\Invites;
+use App\Models\Join_Requests;
 
 class User extends Authenticatable
 {
@@ -14,7 +18,6 @@ class User extends Authenticatable
         'password',
         'role',
         'name',
-        
         'isFirstLogin',
         'isHaveGroup',
     ];
@@ -25,14 +28,14 @@ class User extends Authenticatable
 
     protected $primaryKey = 'user_id';
 
-    // Lớp học của user
+    // Lớp học của user - many to many qua bảng user_classes
     public function classes()
     {
         return $this->belongsToMany(
-            ClassSection::class, 
+            ClassSection::class,
             'user_classes',      
-            'user_id',       
-            'class_id'         
+            'user_id',           
+            'class_id'       
         );
     }
 
@@ -42,10 +45,15 @@ class User extends Authenticatable
         return $this->hasMany(Groups::class, 'leader_id', 'user_id');
     }
 
-    // Nhóm mà user tham gia
+    // Nhóm mà user tham gia - many to many qua bảng group_members
     public function groupsJoined()
     {
-        return $this->belongsToMany(Groups::class, 'group_members', 'user_id', 'group_id');
+        return $this->belongsToMany(
+            Groups::class,
+            'group_members',
+            'user_id',
+            'group_id'
+        );
     }
 
     // Lời mời nhận được

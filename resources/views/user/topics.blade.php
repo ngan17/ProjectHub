@@ -52,7 +52,7 @@
                             @foreach($userClasses->pluck('subject')->unique('subject_id') as $subject)
                                 @if($subject)
                                     <option value="{{ $subject->subject_id }}" {{ request('subject_id') == $subject->subject_id ? 'selected' : '' }}>
-                                        {{ $subject->name }}
+                                        {{ $subject->subject_name }}
                                     </option>
                                 @endif
                             @endforeach

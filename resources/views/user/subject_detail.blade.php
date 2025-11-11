@@ -98,7 +98,7 @@
                                             </div>
                                         @endif
 
-                                        <a href="{{ route('user.class.detail', $class->class_id) }}" 
+                                        <a href="{{ route('user.class_detail', $class->class_id) }}" 
                                            class="btn btn-sm btn-outline-primary">
                                             Xem chi tiết <i class="fas fa-arrow-right ms-1"></i>
                                         </a>
@@ -151,7 +151,7 @@
                                                 <i class="fas fa-chalkboard-teacher me-1"></i>
                                                 {{ $topic->lecturer }}
                                             </span>
-                                            <a href="{{ route('user.topic.detail', $topic->topic_id) }}" 
+                                            <a href="{{ route('user.topic_detail', $topic->topic_id) }}" 
                                                class="btn btn-sm btn-link text-primary p-0">
                                                 Chi tiết
                                             </a>

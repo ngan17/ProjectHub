@@ -152,7 +152,7 @@
                                                 </button>
                                             </form>
                                         @else
-                                            <a href="{{ route('user.group.detail', $invite->group->group_id) }}" 
+                                            <a href="{{ route('user.group_detail', $invite->group->group_id) }}" 
                                                class="btn btn-primary w-100">
                                                 <i class="fas fa-eye me-2"></i>
                                                 Xem nhóm
