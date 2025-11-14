@@ -25,14 +25,11 @@ class AuthController extends Controller
             $user = Auth::user();
 
             
-            if ($user->role === 'student'||$user->role=='leader') {
-                return redirect()->route('user.dashboard');
+            if ($user->role === 'student') {
+                return redirect()->route(route: 'user.dashboard');
             } elseif ($user->role === 'lecturer') {
-                return redirect()->route('dashboard');
-            } else {
-                // Nếu không có role xác định, chuyển về trang chung
-                return redirect()->route('dashboard');
-            }
+                return redirect()->route(route: 'dashboard');
+            };
         }
 
         return back()->withErrors([

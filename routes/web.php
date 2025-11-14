@@ -33,6 +33,8 @@ Route::prefix('dashboard')->group(function () {
     Route::get('/admin', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin');
     Route::get('/lecturer', [DashboardController::class, 'lecturerDashboard'])->name('dashboard.lecturer');
     Route::get('/student', [DashboardController::class, 'studentDashboard'])->name('dashboard.student');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/class/{classId}', [DashboardController::class, 'classDetail'])->name('dashboard.class.detail');
 });
 
 Route::get('/requests', function () {
@@ -84,10 +86,7 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     
      Route::get('/groups/create', [UserDashboardController::class, 'createGroupForm'])
         ->name('create_group');
-        Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/class/{classId}', [DashboardController::class, 'classDetail'])->name('dashboard.class.detail');
-});
+      
         
     // ============================================================
     // TOPICS (Đề tài)

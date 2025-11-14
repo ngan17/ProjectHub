@@ -8,6 +8,7 @@ use App\Models\Topic_requests;
 use App\Models\Join_requests;
 use App\Models\Invites;
 use App\Models\ClassSection;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,9 +18,8 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role === 'admin') {
-            return $this->adminDashboard();
-        } elseif ($user->role === 'lecturer') {
+
+        if ($user->role === 'lecturer') {
             return $this->lecturerDashboard($request);
         } else {
             return $this->studentDashboard();
@@ -70,12 +70,8 @@ class DashboardController extends Controller
                 'approved' => Topic_requests::whereHas('topic', function ($q) use ($user, $class) {
                     $q->where('lecturer', $user->name)->where('class_id', $class->class_id);
                 })->where('status', 'Accepted')->count(),
-                'students' => Users::whereHas('classes', function ($q) use ($class) {
-                    $q->where('classes.class_id', $class->class_id);
-                })->where('role', 'student')->count(),
-                'groups' => Groups::whereHas('members.classes', function ($q) use ($class) {
-                    $q->where('classes.class_id', $class->class_id);
-                })->count(),
+                'students' => 0, // Tạm thời set 0 nếu không có quan hệ
+                'groups' => 0,   // Tạm thời set 0 nếu không có quan hệ
             ];
         }
 
@@ -128,12 +124,12 @@ class DashboardController extends Controller
             ->with(['topic_requests.group'])
             ->get();
 
-        $groups = Groups::whereHas('members.classes', function ($q) use ($classId) {
-            $q->where('classes.class_id', $classId);
+        $groups = Groups::whereHas('class', function ($q) use ($classId) {
+            $q->where('class_sections.class_id', $classId);
         })->with(['leader', 'members'])->get();
 
-        $students = Users::whereHas('classes', function ($q) use ($classId) {
-            $q->where('classes.class_id', $classId);
+        $students =User::whereHas('classes', function ($q) use ($classId) {
+            $q->where('class_sections.class_id', $classId);
         })->where('role', 'student')->get();
 
         $topicRequests = Topic_requests::whereHas('topic', function ($q) use ($classId) {
@@ -147,66 +143,34 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Lấy các lớp của sinh viên từ bảng user_classes
-        $studentClasses = ClassSection::whereHas('users', function ($query) use ($user) {
-            $query->where('users.user_id', $user->user_id);
-        })->get();
+        // Lấy các nhóm mà user tham gia
+        $myGroups = $this->getUserGroups($user);
 
-        // Hoặc nếu sinh viên chỉ thuộc 1 lớp, có thể lấy từ field class_id trong users table
-        // $studentClass = Classes::where('class_id', $user->class_id)->first();
+        // Đếm số lượng thông báo chưa xử lý
+        $pendingInvites = $this->countPendingInvites($user);
+        $pendingRequests = $this->countPendingJoinRequests($user);
 
-        $userGroup = Groups::whereHas('members', function ($query) use ($user) {
-            $query->where('group_members.user_id', $user->user_id);
-        })->first();
+        // Lấy các đề tài của nhóm
+        $myTopics = $this->getGroupTopics($myGroups);
 
-        $stats = [
-            'my_group' => $userGroup ? 1 : 0,
-            'my_classes' => $studentClasses->count(),
-            'pending_invites' => Invites::where('member_id', $user->user_id)
-                ->where('status', 'Pending')->count(),
-            'pending_join_requests' => Join_requests::where('member_id', $user->user_id)
-                ->where('status', 'Pending')->count(),
-        ];
+        // Thông tin lớp và môn học
+        $userClasses = $user->classes;
+        $userSubjects = $this->getUserSubjects($userClasses);
 
-        $invites = Invites::where('member_id', $user->user_id)
-            ->where('status', 'Pending')
-            ->with('group.leader', 'leader')
-            ->latest()
-            ->take(5)
+        // Đề tài gợi ý
+        $suggestedTopics = Topics::with('subject')
+            ->inRandomOrder()
+            ->limit(6)
             ->get();
 
-        $joinRequests = Join_requests::where('member_id', $user->user_id)
-            ->where('status', 'Pending')
-            ->with('group.leader')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // Lấy các topics available trong lớp của sinh viên
-        // Topics chưa được nhóm nào của sinh viên đăng ký
-        $availableTopicsQuery = Topics::whereNotIn('topic_id', function ($query) use ($user) {
-            $query->select('topic_id')
-                ->from('groups as g')
-                ->join('group_members as gm', 'g.group_id', '=', 'gm.group_id')
-                ->where('gm.user_id', $user->user_id)
-                ->whereNotNull('g.topic_id');
-        });
-
-        // Chỉ lấy topics trong các lớp của sinh viên
-        if ($studentClasses->isNotEmpty()) {
-            $classIds = $studentClasses->pluck('class_id');
-            $availableTopicsQuery->whereIn('class_id', $classIds);
-        }
-
-        $availableTopics = $availableTopicsQuery->with('class')->take(10)->get();
-
-        return view('dashboard.student', compact(
-            'stats',
-            'invites',
-            'joinRequests',
-            'availableTopics',
-            'userGroup',
-            'studentClasses'
+        return view('user.dashboard', compact(
+            'myGroups',
+            'pendingInvites',
+            'pendingRequests',
+            'myTopics',
+            'userClasses',
+            'userSubjects',
+            'suggestedTopics'
         ));
     }
 }
