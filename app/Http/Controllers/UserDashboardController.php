@@ -214,11 +214,11 @@ class UserDashboardController extends Controller
             ->withCount('members')
             ->paginate(9);
 
-   $userClasses = ClassSection::whereHas('users', function($query) use ($user) {
+        $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
             $query->where('users.user_id', $user->user_id);
         })
-        ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
-        ->get();
+            ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
+            ->get();
 
         return view('user.my_groups', compact('groups', 'userClasses'));
     }
@@ -631,13 +631,13 @@ class UserDashboardController extends Controller
         $user = Auth::user();
 
         // Lấy danh sách class_id mà user đã tham gia (convert to array)
-     $user = Auth::user();
-    $userClasses = DB::table('user_classes')
-        ->where('user_id', $user->user_id)
-        ->pluck('class_id')
-        ->toArray();
+        $user = Auth::user();
+        $userClasses = DB::table('user_classes')
+            ->where('user_id', $user->user_id)
+            ->pluck('class_id')
+            ->toArray();
 
-    $subjects = Subject::all();
+        $subjects = Subject::all();
 
         return view('user.classes', compact('classes', 'userClasses', 'subjects'));
     }
@@ -821,13 +821,15 @@ class UserDashboardController extends Controller
             return collect([]);
         }
 
-        $currentMemberIds = $group->members->pluck('user_id')
-            ->push($group->leader_id);
+        $usedUserIds = \App\Models\Group_Members::whereHas('group', function ($q) use ($group) {
+            $q->where('class_id', $group->class_id);
+        })->pluck('user_id');
 
-        return \App\Models\User::where('role', 'student')->whereHas('classes', function ($query) use ($group) {
-            $query->where('class_sections.class_id', $group->class_id);
-        })
-            ->whereNotIn('user_id', $currentMemberIds)
+        return \App\Models\User::where('role', 'student')
+            ->whereHas('classes', function ($query) use ($group) {
+                $query->where('class_sections.class_id', $group->class_id);
+            })
+            ->whereNotIn('user_id', $usedUserIds) // loại user đã có nhóm trong lớp
             ->orderBy('name')
             ->get();
     }
@@ -843,11 +845,12 @@ class UserDashboardController extends Controller
             ->latest()
             ->get();
     }
+
     /**
      * Tạo thông báo 
      */
-    private  function createNotification($userId)
+    private function createNotification($userId)
     {
-    
+
     }
 }

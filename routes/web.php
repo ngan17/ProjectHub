@@ -84,8 +84,10 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     
      Route::get('/groups/create', [UserDashboardController::class, 'createGroupForm'])
         ->name('create_group');
-        Route::post('/groups', [UserDashboardController::class, 'storeGroup'])
-        ->name('store_group');
+        Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/class/{classId}', [DashboardController::class, 'classDetail'])->name('dashboard.class.detail');
+});
         
     // ============================================================
     // TOPICS (Đề tài)

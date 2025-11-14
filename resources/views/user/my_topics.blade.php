@@ -36,7 +36,7 @@
                 <div class="col-12">
                     <div class="card border-0 shadow-sm hover-card">
                         <!-- Topic Header -->
-                        <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="card-header text-white p-4" style="background: linear-gradient(135deg, #2b2ed8ff 0%, #263bdeff 100%);">
                             <h4 class="mb-2 fw-bold">{{ $topic->name }}</h4>
                             <div class="d-flex flex-wrap gap-3">
                                 @if($topic->subject)

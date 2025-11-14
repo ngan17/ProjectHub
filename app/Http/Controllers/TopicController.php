@@ -12,7 +12,12 @@ class TopicController extends Controller
      */
     public function index()
     {
-        $topics = Topics::paginate(10);
+        $user = Auth::user();
+         if ($user->role === 'lecturer') {
+        $topics = Topics::where('lecturer', $user->name)
+                       ->with(['class', 'subject', 'topic_requests'])
+                       ->paginate(10);
+         }
         return view('topics.index', compact('topics'));
     }
 

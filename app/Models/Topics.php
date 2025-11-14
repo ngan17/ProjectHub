@@ -16,7 +16,8 @@ class Topics extends Model
         'goal',
         'requirements',
         'assigned_group_id',
-        'subject_id'
+        'subject_id',
+        'class_id'   
     ];
 
     public function assignedGroup()
@@ -35,6 +36,11 @@ class Topics extends Model
     public function scopeByClass($query, $classId)
     {
         return $query->where('class_id', $classId);
+    }
+
+     public function class()
+    {
+        return $this->belongsTo(ClassSection::class, 'class_id', 'class_id');
     }
 
 

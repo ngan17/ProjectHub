@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +10,15 @@
 
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: url("{{ asset('background.jpg') }}") no-repeat center center fixed;
+            background-size: cover;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
 
         .login-card {
             background-color: #fff;
@@ -59,6 +62,14 @@
             transition: all 0.3s ease;
         }
 
+        .login-logo {
+            width: 160px;
+
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
         .btn-login:hover {
             background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
             box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
@@ -81,6 +92,7 @@
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -88,11 +100,12 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="login-card">
-        <h4><i class="fas fa-lock me-2 text-primary"></i>Đăng nhập hệ thống</h4>
-
+        <h4> <img src="{{ asset('logo.png') }}" alt="Logo" class="login-logo"></h4>
+        <h3>Đăng nhập hệ thống</h3>
         @if ($errors->any())
             <div class="alert alert-danger text-center">
                 {{ $errors->first() }}
@@ -123,4 +136,5 @@
     </div>
 
 </body>
+
 </html>
