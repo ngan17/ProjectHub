@@ -323,7 +323,7 @@
                                     <td>{{ $student->email }}</td>
                                     <td>
                                         @php
-                                            $studentGroup = $student->groups ? $student->groups->first() : null;
+                                            $studentGroup = $student->groupsJoined ? $student->groupsJoined->first() : null;
                                         @endphp
                                         @if($studentGroup)
                                             <span class="badge bg-primary">{{ $studentGroup->group_name }}</span>

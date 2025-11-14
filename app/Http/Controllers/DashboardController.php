@@ -1,14 +1,13 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Users;
+use App\Models\User;
 use App\Models\Topics;
 use App\Models\Groups;
 use App\Models\Topic_requests;
 use App\Models\Join_requests;
 use App\Models\Invites;
 use App\Models\ClassSection;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,13 +28,13 @@ class DashboardController extends Controller
     private function adminDashboard()
     {
         $stats = [
-            'total_users' => Users::count(),
+            'total_users' => User::count(),
             'total_topics' => Topics::count(),
             'total_groups' => Groups::count(),
             'pending_requests' => Topic_requests::where('status', 'Pending')->count(),
         ];
 
-        $recentUsers = Users::latest()->take(5)->get();
+        $recentUsers = User::latest()->take(5)->get();
         $recentTopics = Topics::latest()->take(5)->get();
         $recentGroups = Groups::with('leader')->latest()->take(5)->get();
         $pendingTopicRequests = Topic_requests::where('status', 'Pending')
@@ -47,62 +46,70 @@ class DashboardController extends Controller
         return view('dashboard.admin', compact('stats', 'recentUsers', 'recentTopics', 'recentGroups', 'pendingTopicRequests'));
     }
 
-    private function lecturerDashboard(Request $request)
-    {
-        $user = Auth::user();
+private function lecturerDashboard(Request $request)
+{
+    $user = Auth::user();
 
-        // Lấy tất cả các lớp có topics mà giảng viên phụ trách
-        $lecturerClasses = ClassSection::whereHas('topics', function ($query) use ($user) {
-            $query->where('lecturer', $user->name);
-        })->get();
+    // Lấy các lớp mà lecturer đang dạy
+    $lecturerClasses = $user->classes;
 
-        // Tính toán statistics cho từng lớp
-        $classStats = [];
-        foreach ($lecturerClasses as $class) {
-            $classTopics = Topics::where('lecturer', $user->name)
-                ->where('class_id', $class->class_id);
+    // Tính toán statistics cho từng lớp
+    $classStats = [];
+    foreach ($lecturerClasses as $class) {
+        $topicsCount = Topics::where('class_id', $class->class_id)->count();
+        
+        $pendingCount = Topic_requests::whereHas('topic', function ($q) use ($class) {
+            $q->where('class_id', $class->class_id);
+        })->where('status', 'Pending')->count();
+        
+        $approvedCount = Topic_requests::whereHas('topic', function ($q) use ($class) {
+            $q->where('class_id', $class->class_id);
+        })->where('status', 'Accepted')->count();
+        
+        $groupsCount = Groups::where('class_id', $class->class_id)->count();
+        
+        $studentsCount = $class->users->where('role', 'student')->count();
 
-            $classStats[$class->class_id] = [
-                'topics' => (clone $classTopics)->count(),
-                'pending' => Topic_requests::whereHas('topic', function ($q) use ($user, $class) {
-                    $q->where('lecturer', $user->name)->where('class_id', $class->class_id);
-                })->where('status', 'Pending')->count(),
-                'approved' => Topic_requests::whereHas('topic', function ($q) use ($user, $class) {
-                    $q->where('lecturer', $user->name)->where('class_id', $class->class_id);
-                })->where('status', 'Accepted')->count(),
-                'students' => 0, // Tạm thời set 0 nếu không có quan hệ
-                'groups' => 0,   // Tạm thời set 0 nếu không có quan hệ
-            ];
-        }
-
-        // Overall statistics
-        $stats = [
-            'total_classes' => $lecturerClasses->count(),
-            'assigned_topics' => Topics::where('lecturer', $user->name)->count(),
-            'pending_requests' => Topic_requests::whereHas('topic', function ($query) use ($user) {
-                $query->where('lecturer', $user->name);
-            })->where('status', 'Pending')->count(),
-            'approved_topics' => Topic_requests::whereHas('topic', function ($query) use ($user) {
-                $query->where('lecturer', $user->name);
-            })->where('status', 'Accepted')->count(),
+        $classStats[$class->class_id] = [
+            'class_name' => $class->class_name,
+            'subject_name' => $class->subject->subject_name ?? 'N/A',
+            'topics' => $topicsCount,
+            'pending' => $pendingCount,
+            'approved' => $approvedCount,
+            'students' => $studentsCount,
+            'groups' => $groupsCount,
         ];
-
-        // Recent requests
-        $recentRequests = Topic_requests::whereHas('topic', function ($query) use ($user) {
-            $query->where('lecturer', $user->name);
-        })->with(['topic.class', 'group'])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return view('dashboard.lecturer', compact(
-            'stats',
-            'lecturerClasses',
-            'classStats',
-            'recentRequests'
-        ));
     }
 
+    // Overall statistics
+    $lecturerClassIds = $lecturerClasses->pluck('class_id');
+    
+    $stats = [
+        'total_classes' => $lecturerClasses->count(),
+        'assigned_topics' => Topics::whereIn('class_id', $lecturerClassIds)->count(),
+        'pending_requests' => Topic_requests::whereHas('topic', function ($query) use ($lecturerClassIds) {
+            $query->whereIn('class_id', $lecturerClassIds);
+        })->where('status', 'Pending')->count(),
+        'approved_topics' => Topic_requests::whereHas('topic', function ($query) use ($lecturerClassIds) {
+            $query->whereIn('class_id', $lecturerClassIds);
+        })->where('status', 'Accepted')->count(),
+    ];
+
+    // Recent requests
+    $recentRequests = Topic_requests::whereHas('topic', function ($query) use ($lecturerClassIds) {
+        $query->whereIn('class_id', $lecturerClassIds);
+    })->with(['topic.class', 'group.leader'])
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get();
+
+    return view('dashboard.lecturer', compact(
+        'stats',
+        'lecturerClasses',
+        'classStats',
+        'recentRequests'
+    ));
+}
     // Thêm method để xem chi tiết lớp
     public function classDetail($classId)
     {
@@ -128,7 +135,7 @@ class DashboardController extends Controller
             $q->where('class_sections.class_id', $classId);
         })->with(['leader', 'members'])->get();
 
-        $students =User::whereHas('classes', function ($q) use ($classId) {
+        $students = User::whereHas('classes', function ($q) use ($classId) {
             $q->where('class_sections.class_id', $classId);
         })->where('role', 'student')->get();
 

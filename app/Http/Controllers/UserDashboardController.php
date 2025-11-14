@@ -8,6 +8,7 @@ use App\Models\Invites;
 use App\Models\Join_Requests;
 use App\Models\Topic_requests;
 use App\Models\ClassSection;
+use App\Models\Group_Members;
 use App\Models\Subject;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -269,6 +270,11 @@ class UserDashboardController extends Controller
             'leader_id' => $user->user_id,
             'class_id' => $validated['class_id'],
         ]);
+        Group_Members::create([
+        'group_id' => $group->group_id, 
+        'user_id' => $user->user_id,    
+        'role' => 'leader'         
+    ]);
 
         return redirect()->route('user.group_detail', $group->group_id)
             ->with('success', 'Tạo nhóm thành công! Bạn có thể mời thêm thành viên.');

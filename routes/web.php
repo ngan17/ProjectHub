@@ -6,6 +6,7 @@ use App\Http\Controllers\InviteController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -73,6 +74,20 @@ Route::controller(TopicRequestController::class)->middleware('auth')->group(func
     Route::patch('/topic-requests/{topic_request}/reject', 'reject')->name('topic_requests.reject');
     Route::delete('/topic-requests/{topic_request}', 'destroy')->name('topic_requests.destroy');
 });
+
+
+Route::middleware(['auth'])->group(function () {
+    // Student routes
+    Route::resource('students', StudentController::class);
+    
+    // Import/Export routes
+    Route::get('students-import/form', [StudentController::class, 'importForm'])->name('students.import.form');
+    Route::post('students-import', [StudentController::class, 'import'])->name('students.import');
+    Route::get('students-export', [StudentController::class, 'export'])->name('students.export');
+    Route::get('students-template/download', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
+});
+
+
 use App\Http\Controllers\UserDashboardController;
 
 Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
@@ -86,7 +101,8 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     
      Route::get('/groups/create', [UserDashboardController::class, 'createGroupForm'])
         ->name('create_group');
-      
+      Route::post('/groups/store', [UserDashboardController::class, 'storeGroup'])
+     ->name('store_group');
         
     // ============================================================
     // TOPICS (Đề tài)
