@@ -138,22 +138,21 @@ class UserDashboardController extends Controller
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể đăng ký đề tài!');
         }
 
-        // Tìm xem đã từng gửi request chưa
+
         $existing = Topic_requests::where('topic_id', $validated['topic_id'])
             ->where('group_id', $validated['group_id'])
             ->first();
 
-        // ❌ Nếu có và đã được Accepted → không cho gửi nữa
         if ($existing && $existing->status === 'Accepted') {
             return back()->with('warning', 'Nhóm đã đăng ký đề tài này rồi!');
         }
 
-        // ❗ Nếu có và đang Pending → không cho gửi thêm
+
         if ($existing && $existing->status === 'Pending') {
             return back()->with('warning', 'Nhóm đã gửi yêu cầu cho đề tài này và đang chờ duyệt.');
         }
 
-        // 🔄 Nếu có và bị Rejected → cho gửi lại bằng UPDATE, không tạo bản ghi mới
+       
         if ($existing && $existing->status === 'Rejected') {
             $existing->update([
                 'status' => 'Pending',
@@ -165,7 +164,6 @@ class UserDashboardController extends Controller
             return back()->with('success', 'Đã gửi lại yêu cầu đăng ký đề tài!');
         }
 
-        // 🆕 Nếu chưa có → tạo mới
         $topicRequest = Topic_requests::create([
             'topic_id' => $validated['topic_id'],
             'group_id' => $validated['group_id'],

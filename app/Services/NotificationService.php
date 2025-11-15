@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Notifications; // Có chữ s
+use App\Models\Notifications;
 use App\Models\User;
 
 class NotificationService
@@ -37,7 +37,7 @@ class NotificationService
                 'topic_request',
                 'Yêu cầu đăng ký đề tài mới',
                 "Nhóm {$group->group_name} yêu cầu đăng ký đề tài: {$topic->name}",
-                route('topic_requests.index', $topicRequest->request_id),
+                route('topic_requests.index'), // Sửa lại route
                 [
                     'topic_id' => $topic->topic_id,
                     'group_id' => $group->group_id,
@@ -61,7 +61,7 @@ class NotificationService
             'topic_approved',
             'Đề tài đã được duyệt',
             "Đề tài '{$topic->name}' của nhóm {$group->group_name} đã được phê duyệt!",
-            route('user.my-topics'),
+            route('user.my_topics'), // Sửa từ my-topics thành my_topics
             [
                 'topic_id' => $topic->topic_id,
                 'group_id' => $group->group_id,
@@ -75,7 +75,7 @@ class NotificationService
                 'topic_approved',
                 'Đề tài đã được duyệt',
                 "Đề tài '{$topic->name}' của nhóm {$group->group_name} đã được phê duyệt!",
-                route('user.my-topics'),
+                route('user.my_topics'), // Sửa từ my-topics thành my_topics
                 [
                     'topic_id' => $topic->topic_id,
                     'group_id' => $group->group_id,
@@ -178,7 +178,7 @@ class NotificationService
             'invite',
             'Lời mời tham gia nhóm',
             "{$inviter->name} mời bạn tham gia nhóm {$group->group_name}",
-            route('user.invites'),
+            route('user.invites'), // Đã đúng rồi
             [
                 'group_id' => $group->group_id,
                 'group_name' => $group->group_name,
