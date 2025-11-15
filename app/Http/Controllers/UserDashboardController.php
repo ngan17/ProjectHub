@@ -10,6 +10,7 @@ use App\Models\Topic_requests;
 use App\Models\ClassSection;
 use App\Models\Group_Members;
 use App\Models\Subject;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,7 @@ class UserDashboardController extends Controller
 
         // Đề tài gợi ý
         $suggestedTopics = Topics::with('subject')
+            ->whereNull('assigned_group_id')
             ->inRandomOrder()
             ->limit(6)
             ->get();
@@ -91,7 +93,6 @@ class UserDashboardController extends Controller
      */
     public function topicDetail($id)
     {
-
         $topic = Topics::with([
             'subject',
             'subject.classes',
@@ -104,6 +105,7 @@ class UserDashboardController extends Controller
         $userClasses = $user->classes;
 
         $userClass = $userClasses->first();
+
         // Kiểm tra nhóm nào đã đăng ký đề tài này
         $groupsRegistered = $topic->topic_requests()
             ->whereIn('status', ['Pending', 'Accepted'])
@@ -131,26 +133,47 @@ class UserDashboardController extends Controller
 
         $group = Groups::findOrFail($validated['group_id']);
 
-  
+        // Chỉ trưởng nhóm mới được gửi request
         if (!$this->isGroupLeader($group)) {
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể đăng ký đề tài!');
         }
 
-        $existingRequest = Topic_requests::where([
-            'topic_id' => $validated['topic_id'],
-            'group_id' => $validated['group_id']
-        ])->first();
+        // Tìm xem đã từng gửi request chưa
+        $existing = Topic_requests::where('topic_id', $validated['topic_id'])
+            ->where('group_id', $validated['group_id'])
+            ->first();
 
-        if ($existingRequest) {
+        // ❌ Nếu có và đã được Accepted → không cho gửi nữa
+        if ($existing && $existing->status === 'Accepted') {
             return back()->with('warning', 'Nhóm đã đăng ký đề tài này rồi!');
         }
 
-        Topic_requests::create([
+        // ❗ Nếu có và đang Pending → không cho gửi thêm
+        if ($existing && $existing->status === 'Pending') {
+            return back()->with('warning', 'Nhóm đã gửi yêu cầu cho đề tài này và đang chờ duyệt.');
+        }
+
+        // 🔄 Nếu có và bị Rejected → cho gửi lại bằng UPDATE, không tạo bản ghi mới
+        if ($existing && $existing->status === 'Rejected') {
+            $existing->update([
+                'status' => 'Pending',
+                'created_by' => Auth::id(),
+            ]);
+
+            NotificationService::topicRequestCreated($existing);
+
+            return back()->with('success', 'Đã gửi lại yêu cầu đăng ký đề tài!');
+        }
+
+        // 🆕 Nếu chưa có → tạo mới
+        $topicRequest = Topic_requests::create([
             'topic_id' => $validated['topic_id'],
             'group_id' => $validated['group_id'],
             'created_by' => Auth::id(),
             'status' => 'Pending',
         ]);
+
+        NotificationService::topicRequestCreated($topicRequest);
 
         return back()->with('success', 'Đã gửi yêu cầu đăng ký đề tài thành công!');
     }
@@ -269,11 +292,12 @@ class UserDashboardController extends Controller
             'leader_id' => $user->user_id,
             'class_id' => $validated['class_id'],
         ]);
+
         Group_Members::create([
-        'group_id' => $group->group_id, 
-        'user_id' => $user->user_id,    
-        'role' => 'leader'         
-    ]);
+            'group_id' => $group->group_id,
+            'user_id' => $user->user_id,
+            'role' => 'leader'
+        ]);
 
         return redirect()->route('user.group_detail', $group->group_id)
             ->with('success', 'Tạo nhóm thành công! Bạn có thể mời thêm thành viên.');
@@ -359,12 +383,18 @@ class UserDashboardController extends Controller
             return back()->with('warning', 'Đã gửi lời mời cho người này rồi!');
         }
 
-        Invites::create([
+        $invite = Invites::create([
             'group_id' => $validated['group_id'],
             'member_id' => $validated['member_id'],
             'invitedBy' => Auth::id(),
             'status' => 'Pending',
         ]);
+
+        // Load relationships trước khi gửi notification
+        $invite->load(['group', 'inviter']);
+
+        // Gửi thông báo
+        NotificationService::groupInviteCreated($invite);
 
         return back()->with('success', 'Đã gửi lời mời thành công!');
     }
@@ -490,11 +520,14 @@ class UserDashboardController extends Controller
             return back()->with('warning', 'Bạn đã gửi yêu cầu tham gia nhóm này rồi!');
         }
 
-        Join_Requests::create([
+        $joinRequest = Join_Requests::create([
             'group_id' => $validated['group_id'],
             'member_id' => $user->user_id,
             'status' => 'Pending',
         ]);
+
+        // Gửi thông báo cho trưởng nhóm
+        NotificationService::joinRequestCreated($joinRequest);
 
         return back()->with('success', 'Đã gửi yêu cầu tham gia nhóm!');
     }
@@ -586,6 +619,9 @@ class UserDashboardController extends Controller
             }
 
             $joinRequest->update(['status' => 'Approved']);
+
+            // Gửi thông báo
+            NotificationService::joinRequestApproved($joinRequest);
         });
 
         return back()->with('success', 'Đã chấp nhận yêu cầu tham gia!');
@@ -635,8 +671,7 @@ class UserDashboardController extends Controller
 
         $user = Auth::user();
 
-        // Lấy danh sách class_id mà user đã tham gia (convert to array)
-        $user = Auth::user();
+        // Lấy danh sách class_id mà user đã tham gia
         $userClasses = DB::table('user_classes')
             ->where('user_id', $user->user_id)
             ->pluck('class_id')
@@ -646,6 +681,7 @@ class UserDashboardController extends Controller
 
         return view('user.classes', compact('classes', 'userClasses', 'subjects'));
     }
+
     /**
      * Chi tiết lớp học
      */
@@ -775,6 +811,11 @@ class UserDashboardController extends Controller
             });
         }
 
+        // Filter theo lớp học
+        if ($request->filled('class_id')) {
+            $query->where('class_id', $request->class_id);
+        }
+
         // Filter theo môn học
         if ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
@@ -783,9 +824,9 @@ class UserDashboardController extends Controller
         // Filter theo trạng thái
         if ($request->filled('status')) {
             if ($request->status === 'available') {
-                $query->whereDoesntHave('assignedGroup');
+                $query->whereNull('assigned_group_id');
             } elseif ($request->status === 'assigned') {
-                $query->whereHas('assignedGroup');
+                $query->whereNotNull('assigned_group_id');
             }
         }
 
@@ -834,7 +875,7 @@ class UserDashboardController extends Controller
             ->whereHas('classes', function ($query) use ($group) {
                 $query->where('class_sections.class_id', $group->class_id);
             })
-            ->whereNotIn('user_id', $usedUserIds) // loại user đã có nhóm trong lớp
+            ->whereNotIn('user_id', $usedUserIds)
             ->orderBy('name')
             ->get();
     }
@@ -849,13 +890,5 @@ class UserDashboardController extends Controller
             ->with('member')
             ->latest()
             ->get();
-    }
-
-    /**
-     * Tạo thông báo 
-     */
-    private function createNotification($userId)
-    {
-
     }
 }

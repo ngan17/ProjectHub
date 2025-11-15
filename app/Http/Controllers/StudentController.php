@@ -27,7 +27,7 @@ class StudentController extends Controller
     if ($user->role === 'lecturer') {
         $lecturerClassIds = $user->classes->pluck('class_id');
         $query->whereHas('classes', function($q) use ($lecturerClassIds) {
-            // FIX: Chỉ rõ tên bảng cho class_id
+
             $q->whereIn('class_sections.class_id', $lecturerClassIds);
         });
         

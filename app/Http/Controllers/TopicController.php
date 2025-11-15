@@ -15,7 +15,7 @@ class TopicController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+           if ($user->role=='student') return  abort(403, 'Bạn không có quyền ');
         if ($user->role === 'lecturer') {
             $query = Topics::where('lecturer', $user->name)
                            ->with(['class.subject', 'topic_requests']);
@@ -46,7 +46,7 @@ class TopicController extends Controller
     {
         $user = Auth::user();
         
-        // CHỈ lấy các lớp mà lecturer đang dạy
+        
         $classes = $user->classes; // <-- SỬA Ở ĐÂY
         
         return view('topics.create', compact('classes'));
@@ -58,7 +58,7 @@ class TopicController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+        if ($user->role=='student') return  abort(403, 'Bạn không có quyền ');
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:topics',
             'description' => 'required|string|min:10',

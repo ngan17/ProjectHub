@@ -48,7 +48,10 @@ class Invites extends Model
     {
         return $this->belongsTo(User::class, 'invitedBy', 'user_id');
     }
-
+public function inviter()
+    {
+        return $this->belongsTo(User::class, 'invitedBy', 'user_id');
+    }
     public function member()
     {
         return $this->belongsTo(User::class, 'member_id', 'user_id');

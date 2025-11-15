@@ -22,7 +22,7 @@
                         <i class="fas fa-search me-2"></i>
                         Tìm đề tài
                     </a>
-                    <a href="{{ route('user.my-groups') }}" class="btn btn-success">
+                    <a href="{{ route('user.my_groups') }}" class="btn btn-success">
                         <i class="fas fa-users me-2"></i>
                         Xem nhóm
                     </a>

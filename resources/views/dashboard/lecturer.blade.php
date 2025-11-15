@@ -288,7 +288,7 @@
                                                         }
                                                     }
                                                 </script>
-                                                @endsection
+                                         
                                             </tr>
                                         @endforeach
                                     </tbody>

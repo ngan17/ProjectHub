@@ -302,7 +302,7 @@
 
 <body>
     <div class="overlay" id="overlay"></div>
-    
+
     <div class="d-flex">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
@@ -345,6 +345,9 @@
                         <span class="notification-badge">{{ $invCount }}</span>
                     @endif
                 </a>
+
+
+
 
                 <!-- Join Requests -->
                 <a href="{{ route('user.join-requests') }}"
@@ -408,41 +411,139 @@
 
                 <div class="d-flex align-items-center gap-3">
                     <!-- Notifications -->
+                    <!-- Notifications Dropdown trong layout -->
                     <div class="dropdown">
-                        <button class="btn btn-notification" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-notification" type="button" id="notificationDropdown"
+                            data-bs-toggle="dropdown">
                             <i class="fas fa-bell"></i>
-                            @php
-                                $invitesCount = is_int($pendingInvites ?? 0) ? ($pendingInvites ?? 0) : (isset($pendingInvites) ? $pendingInvites->count() : 0);
-                                $requestsCount = is_int($pendingRequests ?? 0) ? ($pendingRequests ?? 0) : (isset($pendingRequests) ? $pendingRequests->count() : 0);
-                                $totalNotif = $invitesCount + $requestsCount;
-                            @endphp
-                            @if($totalNotif > 0)
-                                <span class="notification-badge-header">{{ $totalNotif }}</span>
-                            @endif
+                            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 300px;">
-                            <li><h6 class="dropdown-header">Thông báo</h6></li>
-                            @if($invitesCount > 0)
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('user.invites') }}">
-                                        <i class="fas fa-envelope text-primary me-2"></i>
-                                        {{ $invitesCount }} lời mời mới
-                                    </a>
+                        <ul class="dropdown-menu dropdown-menu-end"
+                            style="width: 350px; max-height: 400px; overflow-y: auto;">
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">Thông báo</h6>
+                                    <button class="btn btn-link btn-sm text-primary p-0" onclick="markAllAsRead()">
+                                        Đánh dấu đã đọc
+                                    </button>
+                                </div>
+                            </li>
+                            <div id="notificationList">
+                                <li class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
                                 </li>
-                            @endif
-                            @if($requestsCount > 0)
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('user.join-requests') }}">
-                                        <i class="fas fa-paper-plane text-success me-2"></i>
-                                        {{ $requestsCount }} yêu cầu đang chờ
-                                    </a>
-                                </li>
-                            @endif
-                            @if($totalNotif == 0)
-                                <li><span class="dropdown-item-text text-muted">Không có thông báo mới</span></li>
-                            @endif
+                            </div>
+                            <li class="border-top">
+                                <a class="dropdown-item text-center text-primary fw-semibold py-2"
+                                    href="{{ route('notifications.index') }}">
+                                    Xem tất cả
+                                </a>
+                            </li>
                         </ul>
                     </div>
+
+                    @push('scripts')
+                                        <script>
+                                            // Load notifications on page load
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                loadNotifications();
+
+                                                // Reload every 30 seconds
+                                                setInterval(loadNotifications, 30000);
+                                            });
+
+                                            // Load notifications
+                                            function loadNotifications() {
+                                                fetch('{{ route("notifications.recent") }}')
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        updateNotificationBadge(data.unread_count);
+                                                        renderNotifications(data.notifications);
+                                                    })
+                                                    .catch(error => console.error('Error loading notifications:', error));
+                                            }
+
+                                            // Update badge
+                                            function updateNotificationBadge(count) {
+                                                const badge = document.getElementById('notificationBadge');
+                                                if (count > 0) {
+                                                    badge.textContent = count > 99 ? '99+' : count;
+                                                    badge.style.display = 'block';
+                                                } else {
+                                                    badge.style.display = 'none';
+                                                }
+                                            }
+
+                                            // Render notifications
+                                            function renderNotifications(notifications) {
+                                                const list = document.getElementById('notificationList');
+
+                                                if (notifications.length === 0) {
+                                                    list.innerHTML = `
+                                <li class="text-center py-4">
+                                    <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0 small">Không có thông báo mới</p>
+                                </li>
+                            `;
+                                                    return;
+                                                }
+
+                                                list.innerHTML = notifications.map(notif => `
+                            <li>
+                                <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
+                                   href="{{ url('/') }}/notifications/${notif.notification_id}/read"
+                                   style="white-space: normal;">
+                                    <div class="d-flex align-items-start py-2">
+                                        <div class="me-3">
+                                            <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1 fw-semibold small">${notif.title}</p>
+                                            <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
+                                            <small class="text-muted">${formatTime(notif.created_at)}</small>
+                                        </div>
+                                        ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
+                                    </div>
+                                </a>
+                            </li>
+                        `).join('');
+                                            }
+
+                                            // Format time ago
+                                            function formatTime(dateString) {
+                                                const date = new Date(dateString);
+                                                const now = new Date();
+                                                const seconds = Math.floor((now - date) / 1000);
+
+                                                if (seconds < 60) return 'Vừa xong';
+                                                if (seconds < 3600) return Math.floor(seconds / 60) + ' phút trước';
+                                                if (seconds < 86400) return Math.floor(seconds / 3600) + ' giờ trước';
+                                                if (seconds < 604800) return Math.floor(seconds / 86400) + ' ngày trước';
+
+                                                return date.toLocaleDateString('vi-VN');
+                                            }
+
+                                            // Mark all as read
+                                            function markAllAsRead() {
+                                                fetch('{{ route("notifications.mark-all-read") }}', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                    }
+                                                })
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        if (data.success) {
+                                                            loadNotifications();
+                                                        }
+                                                    })
+                                                    .catch(error => console.error('Error:', error));
+                                            }
+                                        </script>
+                    @endpush
 
                     <!-- User Dropdown -->
                     <div class="dropdown user-dropdown">
@@ -452,12 +553,14 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ route('users.profile') }}">
-                                <i class="fas fa-user me-2"></i>Hồ sơ
-                            </a></li>
+                                    <i class="fas fa-user me-2"></i>Hồ sơ
+                                </a></li>
                             <li><a class="dropdown-item" href="#">
-                                <i class="fas fa-cog me-2"></i>Cài đặt
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
+                                    <i class="fas fa-cog me-2"></i>Cài đặt
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
@@ -511,13 +614,13 @@
             toggleBtn.addEventListener('click', function () {
                 sidebar.classList.toggle('collapsed');
                 mainContainer.classList.toggle('expanded');
-                
+
                 // For mobile
                 if (window.innerWidth <= 768) {
                     sidebar.classList.toggle('active');
                     overlay.classList.toggle('active');
                 }
-                
+
                 // Save state to localStorage
                 const isCollapsed = sidebar.classList.contains('collapsed');
                 localStorage.setItem('sidebarCollapsed', isCollapsed);
@@ -532,8 +635,8 @@
             });
         }
 
-   
-        window.addEventListener('DOMContentLoaded', function() {
+
+        window.addEventListener('DOMContentLoaded', function () {
             if (window.innerWidth > 768) {
                 const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
                 if (isCollapsed) {
@@ -543,7 +646,7 @@
             }
         });
 
-       
+
         setTimeout(function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
