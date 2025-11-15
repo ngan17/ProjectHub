@@ -1,61 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/logo.png" width="400" alt="ProjectHub Logo">
 </p>
 
-## About Laravel
+<h1 align="center">ProjectHub - Hệ thống Quản lý Đề tài Nhóm</h1>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-11.x-red.svg" alt="Laravel Version">
+  <img src="https://img.shields.io/badge/PHP-8.2+-blue.svg" alt="PHP Version">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📋 Giới thiệu
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**ProjectHub** là hệ thống quản lý đề tài và nhóm sinh viên được xây dựng trên nền tảng Laravel. Hệ thống giúp tổ chức, quản lý và theo dõi quá trình đăng ký, phân công đề tài cho các nhóm sinh viên một cách hiệu quả.
 
-## Learning Laravel
+### ✨ Tính năng chính
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+#### 👥 Quản lý Nhóm
+- Tạo và quản lý nhóm sinh viên
+- Mời thành viên vào nhóm
+- Gửi/nhận yêu cầu tham gia nhóm
+- Phân quyền trưởng nhóm và thành viên
+- Theo dõi trạng thái nhóm theo lớp học
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+#### 📚 Quản lý Đề tài
+- Duyệt danh sách đề tài theo môn học/lớp học
+- Lọc đề tài theo trạng thái (còn trống/đã có nhóm)
+- Đăng ký đề tài cho nhóm
+- Theo dõi trạng thái duyệt đề tài
+- Quản lý đề tài đã đăng ký
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+#### 🏫 Quản lý Lớp học & Môn học
+- Quản lý danh sách lớp học
+- Phân công môn học cho lớp
+- Import/Export danh sách sinh viên
+- Thống kê nhóm và đề tài theo lớp
 
-## Laravel Sponsors
+#### 🔔 Hệ thống Thông báo
+- Thông báo real-time
+- Thông báo lời mời tham gia nhóm
+- Thông báo yêu cầu tham gia nhóm
+- Thông báo trạng thái đề tài (duyệt/từ chối)
+- Đánh dấu đã đọc/chưa đọc
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+#### 👤 Phân quyền Người dùng
+- **Admin**: Quản lý toàn bộ hệ thống
+- **Giảng viên**: Quản lý đề tài, duyệt đăng ký
+- **Sinh viên**: Tạo nhóm, đăng ký đề tài
 
-### Premium Partners
+## 🚀 Công nghệ sử dụng
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Backend**: Laravel 11.x
+- **Frontend**: Bootstrap 5, Blade Templates
+- **Database**: MySQL/MariaDB
+- **Icons**: Font Awesome 6.4
+- **JS**: Vanilla JavaScript (ES6+)
 
-## Contributing
+## 📦 Yêu cầu hệ thống
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- PHP >= 8.2
+- Composer >= 2.0
+- MySQL >= 5.7 hoặc MariaDB >= 10.3
+- Node.js >= 18.x (optional, cho build assets)
+- Git
 
-## Code of Conduct
+## 🛠️ Cài đặt
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 1. Clone project
+```bash
+git clone https://github.com/yourusername/ProjectHub.git
+cd ProjectHub
+```
 
-## Security Vulnerabilities
+### 2. Cài đặt dependencies
+```bash
+composer install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 3. Cấu hình môi trường
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## License
+Chỉnh sửa file `.env` với thông tin database:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=projecthub
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 4. Tạo database và chạy migrations
+```bash
+# Tạo database
+mysql -u root -p -e "CREATE DATABASE projecthub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Chạy migrations
+php artisan migrate
+
+# Seed dữ liệu mẫu (optional)
+php artisan db:seed
+```
+
+### 5. Tạo symbolic link cho storage
+```bash
+php artisan storage:link
+```
+
+### 6. Khởi chạy server
+```bash
+php artisan serve
+```
+
+Truy cập: `http://localhost:8000`
+
+## 📝 Tài khoản mặc định
+
+Sau khi seed dữ liệu, bạn có thể đăng nhập với các tài khoản:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@projecthub.com | password |
+| Giảng viên | lecturer@projecthub.com | password |
+| Sinh viên | student@projecthub.com | password |
+
+## 📂 Cấu trúc Project
+```
+ProjectHub/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Admin/
+│   │   │   │   └── ClassController.php
+│   │   │   ├── NotificationController.php
+│   │   │   ├── UserDashboardController.php
+│   │   │   └── ...
+│   │   └── Middleware/
+│   ├── Models/
+│   │   ├── User.php
+│   │   ├── Groups.php
+│   │   ├── Topics.php
+│   │   ├── Notifications.php
+│   │   └── ...
+│   └── Services/
+│       └── NotificationService.php
+├── database/
+│   ├── migrations/
+│   └── seeders/
+├── resources/
+│   └── views/
+│       ├── admin/
+│       ├── user/
+│       ├── layouts/
+│       └── ...
+├── routes/
+│   └── web.php
+└── public/
+    ├── logo.png
+    └── ...
+```
+
+## 🔧 Cấu hình nâng cao
+
+### Import sinh viên từ Excel
+
+1. Tải template Excel:
+```
+GET /students-template/download
+```
+
+2. Upload file Excel:
+```
+POST /students-import
+```
+
+Format file Excel:
+| Email | Họ và tên |
+|-------|-----------|
+| student1@example.com | Nguyễn Văn A |
+| student2@example.com | Trần Thị B |
+
+### Cấu hình Notification
+
+File: `config/app.php`
+```php
+'notification_cleanup_days' => env('NOTIFICATION_CLEANUP_DAYS', 30),
+```
+
+Dọn dẹp notifications cũ:
+```bash
+php artisan schedule:work
+```
+
+## 🎨 Tùy chỉnh giao diện
+
+### Màu sắc chính
+
+File: `resources/views/layouts/user.blade.php`
+```css
+--primary-color: #667eea;
+--secondary-color: #764ba2;
+```
+
+### Logo
+
+Thay thế file `public/logo.png` bằng logo của bạn.
+
+## 🧪 Testing
+```bash
+# Chạy tests
+php artisan test
+
+# Với coverage
+php artisan test --coverage
+```
+
+## 📊 Database Schema
+
+### Bảng chính
+
+- **users** - Quản lý người dùng
+- **groups** - Quản lý nhóm sinh viên
+- **topics** - Quản lý đề tài
+- **class_sections** - Quản lý lớp học
+- **subjects** - Quản lý môn học
+- **notifications** - Quản lý thông báo
+- **topic_requests** - Yêu cầu đăng ký đề tài
+- **join_requests** - Yêu cầu tham gia nhóm
+- **invites** - Lời mời tham gia nhóm
+
+## 🤝 Đóng góp
+
+Mọi đóng góp đều được hoan nghênh! Vui lòng:
+
+1. Fork project
+2. Tạo branch cho tính năng (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Mở Pull Request
+
+## 📞 Liên hệ
+
+- **Developer**: Ngân
+- **Email**: your.email@example.com
+- **GitHub**: [@yourusername](https://github.com/yourusername)
+
+## 📄 License
+
+Project này được phân phối dưới giấy phép MIT. Xem file `LICENSE` để biết thêm chi tiết.
+
+## 🙏 Acknowledgments
+
+- [Laravel](https://laravel.com) - Framework PHP tuyệt vời
+- [Bootstrap](https://getbootstrap.com) - CSS Framework
+- [Font Awesome](https://fontawesome.com) - Icon library
+- Cảm ơn tất cả contributors đã đóng góp cho project
+
+---
+
+<p align="center">Made with ❤️ by Ngân</p>
