@@ -3,11 +3,13 @@
 @section('title', 'Danh sách đề tài')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid px-4">
     <!-- Header -->
-    <div class="mb-4">
-        <h2 class="fw-bold mb-2">Danh sách đề tài</h2>
-        <p class="text-muted">Tìm kiếm và đăng ký đề tài phù hợp cho nhóm của bạn</p>
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-2">Danh sách đề tài</h2>
+            <p class="text-muted">Tìm kiếm và đăng ký đề tài phù hợp cho nhóm của bạn</p>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -95,75 +97,127 @@
         </div>
     </div>
 
-    <!-- Topics List -->
+    <!-- Topics List by Class -->
     @if($topics->isEmpty())
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
-                <i class="fas fa-lightbulb fa-4x text-muted mb-3"></i>
+                <i class="fas fa-lightbulb fa-4x text-muted opacity-50 mb-3"></i>
                 <h5 class="text-muted mb-2">Không tìm thấy đề tài</h5>
                 <p class="text-muted">Vui lòng thử lại với bộ lọc khác</p>
             </div>
         </div>
     @else
-        <div class="row g-4">
-            @foreach($topics as $topic)
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 shadow-sm h-100 hover-card">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h6 class="fw-bold mb-0" style="min-height: 48px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                    {{ $topic->name }}
-                                </h6>
-                                @if($topic->assignedGroup)
-                                    <span class="badge bg-danger ms-2">Đã có nhóm</span>
-                                @else
-                                    <span class="badge bg-success ms-2">Còn trống</span>
-                                @endif
-                            </div>
+        @php
+            // Group topics by class
+            $topicsByClass = $topics->groupBy('class_id');
+        @endphp
 
-                            <div class="mb-3">
-                                <p class="text-muted small mb-2">
-                                    <i class="fas fa-user-tie me-1"></i>
-                                    {{ $topic->lecturer }}
-                                </p>
-                                
-                                @if($topic->subject)
-                                    <p class="text-muted small mb-2">
-                                        <i class="fas fa-book me-1"></i>
-                                        {{ $topic->subject->name }}
-                                    </p>
-                                @endif
-
-                                @if($topic->description)
-                                    <p class="text-muted small mb-0" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                                        {{ $topic->description }}
-                                    </p>
-                                @endif
-                            </div>
-
-                            @if($topic->assignedGroup)
-                                <div class="alert alert-light border mb-3 py-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-users me-1"></i>
-                                        Nhóm: {{ $topic->assignedGroup->group_name }}
-                                    </small>
-                                </div>
+        @foreach($topicsByClass as $classId => $classTopics)
+            @php
+                $class = $classTopics->first()->class;
+            @endphp
+            
+            <div class="mb-5">
+                <!-- Class Header -->
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded p-3 me-3">
+                        <i class="fas fa-chalkboard text-primary fa-lg"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0 fw-bold">{{ $class->class_name ?? 'Chưa phân lớp' }}</h5>
+                        <small class="text-muted">
+                            {{ $classTopics->count() }} đề tài
+                            @if($class && $class->subject)
+                                - {{ $class->subject->subject_name }}
                             @endif
-
-                            <a href="{{ route('user.topic_detail', $topic->topic_id) }}" class="btn btn-outline-primary btn-sm w-100">
-                                <i class="fas fa-eye me-1"></i> Xem chi tiết
-                            </a>
-                        </div>
+                        </small>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge bg-success rounded-pill">
+                            {{ $classTopics->where('assigned_group_id', null)->count() }} còn trống
+                        </span>
+                        <span class="badge bg-secondary rounded-pill ms-2">
+                            {{ $classTopics->whereNotNull('assigned_group_id')->count() }} đã có nhóm
+                        </span>
                     </div>
                 </div>
-            @endforeach
-        </div>
+
+                <!-- Topics Grid -->
+                <div class="row g-3">
+                    @foreach($classTopics as $topic)
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 hover-card">
+                                <div class="card-body p-4">
+                                    <!-- Topic Header -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="fw-bold mb-0 flex-grow-1 me-2" 
+                                            style="min-height: 48px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                                            title="{{ $topic->name }}">
+                                            {{ $topic->name }}
+                                        </h6>
+                                        @if($topic->assignedGroup)
+                                            <span class="badge bg-danger rounded-pill">Đã có nhóm</span>
+                                        @else
+                                            <span class="badge bg-success rounded-pill">Còn trống</span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Topic Info -->
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-user-tie text-primary me-2" style="width: 18px;"></i>
+                                            <small class="text-muted">{{ $topic->lecturer }}</small>
+                                        </div>
+                                        
+                                        @if($topic->subject)
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-book text-primary me-2" style="width: 18px;"></i>
+                                                <small class="text-muted">{{ $topic->subject->subject_name }}</small>
+                                            </div>
+                                        @endif
+
+                                        @if($topic->description)
+                                            <div class="mt-2">
+                                                <p class="text-muted small mb-0" 
+                                                   style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                                    {{ $topic->description }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <!-- Assigned Group Info -->
+                                    @if($topic->assignedGroup)
+                                        <div class="alert alert-light border py-2 px-3 mb-3">
+                                            <small class="text-muted d-flex align-items-center">
+                                                <i class="fas fa-users me-2"></i>
+                                                <span class="text-truncate">{{ $topic->assignedGroup->group_name }}</span>
+                                            </small>
+                                        </div>
+                                    @endif
+
+                                    <!-- Action Button -->
+                                    <div class="d-grid">
+                                        <a href="{{ route('user.topic_detail', $topic->topic_id) }}" 
+                                           class="btn btn-primary">
+                                            <i class="fas fa-eye me-2"></i>Chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
 
         <!-- Pagination -->
         @if($topics->hasPages())
-            <div class="mt-4">
-                <div class="d-flex justify-content-center">
-                    {{ $topics->links() }}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-center">
+                        {{ $topics->links() }}
+                    </div>
                 </div>
             </div>
         @endif
@@ -172,11 +226,32 @@
 
 <style>
     .hover-card {
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0, 0, 0, 0.08);
     }
+
     .hover-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+        border-color: rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    .badge {
+        font-weight: 500;
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+
+    .bg-opacity-10 {
+        --bs-bg-opacity: 0.1;
+    }
+
+    .text-truncate {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>
 @endsection

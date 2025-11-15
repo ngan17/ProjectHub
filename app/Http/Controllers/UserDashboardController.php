@@ -131,12 +131,11 @@ class UserDashboardController extends Controller
 
         $group = Groups::findOrFail($validated['group_id']);
 
-        // Kiểm tra quyền
+  
         if (!$this->isGroupLeader($group)) {
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể đăng ký đề tài!');
         }
 
-        // Kiểm tra đã đăng ký chưa
         $existingRequest = Topic_requests::where([
             'topic_id' => $validated['topic_id'],
             'group_id' => $validated['group_id']

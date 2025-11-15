@@ -524,7 +524,7 @@
             });
         }
 
-        // Close sidebar when clicking overlay
+
         if (overlay) {
             overlay.addEventListener('click', function () {
                 sidebar.classList.remove('active');
@@ -532,7 +532,7 @@
             });
         }
 
-        // Restore sidebar state on page load
+   
         window.addEventListener('DOMContentLoaded', function() {
             if (window.innerWidth > 768) {
                 const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -543,7 +543,7 @@
             }
         });
 
-        // Auto dismiss alerts after 5 seconds
+       
         setTimeout(function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
