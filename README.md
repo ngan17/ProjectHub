@@ -117,15 +117,7 @@ php artisan serve
 
 Truy cập: `http://localhost:8000`
 
-## 📝 Tài khoản mặc định
 
-Sau khi seed dữ liệu, bạn có thể đăng nhập với các tài khoản:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@projecthub.com | password |
-| Giảng viên | lecturer@projecthub.com | password |
-| Sinh viên | student@projecthub.com | password |
 
 ## 📂 Cấu trúc Project
 ```
@@ -245,8 +237,8 @@ Mọi đóng góp đều được hoan nghênh! Vui lòng:
 ## 📞 Liên hệ
 
 - **Developer**: Ngân
-- **Email**: your.email@example.com
-- **GitHub**: [@yourusername](https://github.com/yourusername)
+- **Email**: nganchoanh1.email@example.com
+- **GitHub**: [@ngan17](https://github.com/ngan17)
 
 ## 📄 License
 
