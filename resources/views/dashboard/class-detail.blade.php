@@ -145,7 +145,7 @@
                             <tbody>
                                 @forelse($topics as $topic)
                                 <tr>
-                                    <td><code>{{ $topic->topic_code ?? 'N/A' }}</code></td>
+                                    <td><code>{{ $topic->topic_id ?? 'N/A' }}</code></td>
                                     <td><strong>{{ $topic->name }}</strong></td>
                                     <td>{{ Str::limit($topic->description, 50) }}</td>
                                     <td>
@@ -205,7 +205,7 @@
                             </div>
                             <p class="text-muted mb-2">
                                 <i class="fas fa-user-tie me-2"></i>
-                                Trưởng nhóm: <strong>{{ optional($group->leader)->username ?? 'N/A' }}</strong>
+                                Trưởng nhóm: <strong>{{ optional($group->leader)->name ?? 'N/A' }}</strong>
                             </p>
                             @if($group->topic)
                                 <p class="text-muted mb-2">
@@ -319,7 +319,7 @@
                                 @forelse($students as $student)
                                 <tr>
                                     <td><code>{{ $student->student_id ?? $student->user_id }}</code></td>
-                                    <td>{{ $student->username ?? 'N/A' }}</td>
+                                    <td>{{ $student->name ?? 'N/A' }}</td>
                                     <td>{{ $student->email }}</td>
                                     <td>
                                         @php

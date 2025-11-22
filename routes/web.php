@@ -4,6 +4,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ClassSectionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
@@ -250,3 +251,4 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::get('/subjects/{id}', [UserDashboardController::class, 'subjectDetail'])
         ->name('subject_detail');
 });
+Route::post('/chatbot/ask', [ChatbotController::class, 'ask'])->name('chatbot.ask')->middleware('auth');
