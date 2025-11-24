@@ -40,7 +40,7 @@
                         <tr>
                             <th>Mã MH</th>
                             <th>Tên Môn học</th>
-                            <th class="text-center">Số TC</th>
+              
                             <th class="text-center">Số lớp đang mở</th>
                             <th class="text-center" style="width: 150px;">Hành động</th>
                         </tr>
@@ -50,7 +50,7 @@
                             <tr>
                                 <td class="fw-bold">{{ $subject->subject_code }}</td>
                                 <td>{{ $subject->subject_name }}</td>
-                                <td class="text-center">{{ $subject->credits }}</td>
+                              
                                 <td class="text-center">
                                     @if($subject->classes_count > 0)
                                         <span class="badge bg-success">{{ $subject->classes_count }} lớp</span>

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Support\Facades\Auth;
 class AdminController extends Controller
 {
     /**
@@ -133,8 +133,10 @@ class AdminController extends Controller
      */
     public function destroy($id)
     {
+
+        $id_Auth=Auth::user()->id;
         // Không cho phép tự xóa chính mình
-        if ($id == auth()->id()) {
+        if ($id ==$id_Auth ) {
             return back()->with('error', 'Bạn không thể xóa chính tài khoản mình đang đăng nhập!');
         }
 

@@ -85,46 +85,73 @@ class UserController extends Controller
     
         
         if ($user->role == 'student') {
-            return view('users.profile', ['user' => $user]);
+            return view('users.profile-info', ['user' => $user]);
         }
         
         return view('users.profile-admin', ['user' => $user]);
     }
 
+public function editProfile()
+    {
+        $user = Auth::user();
+        // Trả về view riêng cho sửa thông tin
+        return view('users.profile-info', compact('user'));
+    }
+
+    /**
+     * [PUT] Xử lý cập nhật thông tin
+     */
     public function updateProfile(Request $request)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
-            'current_password' => 'nullable|required_with:new_password',
-            'new_password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        // Kiểm tra mật khẩu nếu muốn đổi
-        if ($request->filled('new_password')) {
-            if (!$request->filled('current_password')) {
-                return redirect()->back()
-                    ->with('error', 'Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới');
-            }
+        $user->update($validated);
 
-            if (!Hash::check($request->current_password, $user->password)) {
-                return redirect()->back()
-                    ->with('error', 'Mật khẩu hiện tại không chính xác');
-            }
-            
-            // Password sẽ tự động hash trong model boot()
-            $validated['password'] = $request->new_password;
-        }
+        return redirect()->route('users.profile.info')
+            ->with('success', 'Thông tin cá nhân đã được cập nhật.');
+    }
 
-        // Xóa các field không cần thiết
-        unset($validated['current_password'], $validated['new_password']);
+    // --- 2. QUẢN LÝ MẬT KHẨU ---
+
+    /**
+     * [GET] Hiển thị form đổi mật khẩu
+     */
+    public function changePasswordForm()
+    {
+        $user = Auth::user();
+        // Trả về view riêng cho đổi mật khẩu
+        return view('users.profile-password', compact('user'));
+    }
+
+    /**
+     * [PUT] Xử lý đổi mật khẩu
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
 
         /** @var User $user */
-        $user->update($validated);
-        
-        return redirect()->route('users.profile')
-            ->with('success', 'Hồ sơ đã được cập nhật thành công!');
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không chính xác']);
+        }
+
+        $user->update([
+            'password' => $request->new_password // Model của bạn tự hash
+        ]);
+
+        return redirect()->route('users.profile.password')
+            ->with('success', 'Đổi mật khẩu thành công!');
     }
+
 }

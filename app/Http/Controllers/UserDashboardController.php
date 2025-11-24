@@ -128,8 +128,8 @@ class UserDashboardController extends Controller
 
         // 1. Kiểm tra xem user có phải là thành viên không
         $isMember = \App\Models\Group_Members::where('group_id', $groupId)
-                    ->where('user_id', $user->user_id)
-                    ->exists();
+            ->where('user_id', $user->user_id)
+            ->exists();
 
         if (!$isMember) {
             return back()->with('error', 'Bạn không phải là thành viên của nhóm này!');
@@ -180,7 +180,7 @@ class UserDashboardController extends Controller
             return back()->with('warning', 'Nhóm đã gửi yêu cầu cho đề tài này và đang chờ duyệt.');
         }
 
-       
+
         if ($existing && $existing->status === 'Rejected') {
             $existing->update([
                 'status' => 'Pending',
@@ -251,38 +251,38 @@ class UserDashboardController extends Controller
     /**
      * Danh sách nhóm của tôi
      */
-public function myGroups()
-{
-    $user = Auth::user();
+    public function myGroups()
+    {
+        $user = Auth::user();
 
-    // ... (Code cũ giữ nguyên) ...
-    $groups = Groups::where('leader_id', $user->user_id)
-        ->orWhereHas('members', function ($query) use ($user) {
-            $query->where('group_members.user_id', $user->user_id);
+        // ... (Code cũ giữ nguyên) ...
+        $groups = Groups::where('leader_id', $user->user_id)
+            ->orWhereHas('members', function ($query) use ($user) {
+                $query->where('group_members.user_id', $user->user_id);
+            })
+            ->with(['leader', 'topic', 'members', 'class.subject'])
+            ->withCount('members')
+            ->paginate(9);
+
+        $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
+            $query->where('users.user_id', $user->user_id);
         })
-        ->with(['leader', 'topic', 'members', 'class.subject'])
-        ->withCount('members')
-        ->paginate(9);
+            ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
+            ->get();
 
-    $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
-        $query->where('users.user_id', $user->user_id);
-    })
-    ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
-    ->get();
+        $joinedClassIds = Groups::query()
+            ->select('class_id')
+            ->where('leader_id', $user->user_id) // Là trưởng nhóm
+            ->orWhereHas('members', function ($q) use ($user) {
+                $q->where('group_members.user_id', $user->user_id); // Hoặc là thành viên
+            })
+            ->pluck('class_id')
+            ->unique()
+            ->toArray();
 
-    $joinedClassIds = Groups::query()
-        ->select('class_id')
-        ->where('leader_id', $user->user_id) // Là trưởng nhóm
-        ->orWhereHas('members', function($q) use ($user) {
-            $q->where('group_members.user_id', $user->user_id); // Hoặc là thành viên
-        })
-        ->pluck('class_id')
-        ->unique()
-        ->toArray();
-
-    // Truyền thêm $joinedClassIds sang view
-    return view('user.my_groups', compact('groups', 'userClasses', 'joinedClassIds'));
-}
+        // Truyền thêm $joinedClassIds sang view
+        return view('user.my_groups', compact('groups', 'userClasses', 'joinedClassIds'));
+    }
     /**
      * Form tạo nhóm mới
      */
@@ -377,7 +377,9 @@ public function myGroups()
         if (!$this->isGroupLeader($group)) {
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể mời thành viên!');
         }
-
+        if ($group->members->count() >= 4) {
+            return back()->with('error', 'Nhóm đã đủ 5 thành viên, không thể mời thêm!');
+        }
         $availableUsers = $this->getAvailableUsersForGroup($group);
         $pendingInvites = $this->getPendingInvites($groupId);
 
@@ -398,12 +400,15 @@ public function myGroups()
             'member_id' => 'required|exists:users,user_id',
         ]);
 
+
         $group = Groups::findOrFail($validated['group_id']);
 
         if (!$this->isGroupLeader($group)) {
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể mời thành viên!');
         }
-
+        if ($group->members()->count() >= 4) {
+        return back()->with('error', 'Nhóm đã đủ 5 thành viên, không thể mời thêm!');
+    }
         // Kiểm tra user đã là thành viên chưa
         if ($this->isUserInGroup($group, $validated['member_id'])) {
             return back()->with('error', 'Người này đã là thành viên của nhóm!');

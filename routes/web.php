@@ -16,7 +16,7 @@ use App\Http\Controllers\StudentController;
 
 Route::get('/', function () {
     if (Illuminate\Support\Facades\Auth::check()) {
-        // Nếu đã login (nhờ remember), redirect về dashboard dựa role
+       
         $user = Illuminate\Support\Facades\Auth::user();
         if ($user->role === 'student') {
             return redirect()->route('user.dashboard');
@@ -65,12 +65,15 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('users', UserController::class);
-    Route::get('/profile', [UserController::class, 'profile'])->name('users.profile');
-    Route::post('/profile/update', [UserController::class, 'updateProfile'])->name('users.updateProfile');
-    Route::get('/profile-admin', [UserController::class, 'profile'])->name('users.profile-admin');
+    // 1. Route cho trang Thông tin
+    Route::get('/profile/info', [UserController::class, 'editProfile'])->name('users.profile.info');
+    Route::put('/profile/info', [UserController::class, 'updateProfile'])->name('users.profile.update');
+    Route::get('/profile/info-admin', [UserController::class, 'editProfile'])->name('users.profile-info-admin');
+    // 2. Route cho trang Mật khẩu
+    Route::get('/profile/password', [UserController::class, 'changePasswordForm'])->name('users.profile.password');
+    Route::put('/profile/password', [UserController::class, 'changePassword'])->name('users.password.update');
 });
 use Illuminate\Support\Facades\Auth;
 

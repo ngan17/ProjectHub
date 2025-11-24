@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 @include('components.chatbot')
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -369,7 +370,7 @@
                     <span>Đề tài của tôi</span>
                 </a>
 
-         
+
 
                 <!-- Logout -->
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -429,104 +430,104 @@
                     </div>
 
                     @push('scripts')
-                                        <script>
-                                            // Load notifications on page load
-                                            document.addEventListener('DOMContentLoaded', function () {
-                                                loadNotifications();
+                        <script>
+                            // Load notifications on page load
+                            document.addEventListener('DOMContentLoaded', function () {
+                                loadNotifications();
 
-                                                // Reload every 30 seconds
-                                                setInterval(loadNotifications, 30000);
-                                            });
+                                // Reload every 30 seconds
+                                setInterval(loadNotifications, 30000);
+                            });
 
-                                            // Load notifications
-                                            function loadNotifications() {
-                                                fetch('{{ route("notifications.recent") }}')
-                                                    .then(response => response.json())
-                                                    .then(data => {
-                                                        updateNotificationBadge(data.unread_count);
-                                                        renderNotifications(data.notifications);
-                                                    })
-                                                    .catch(error => console.error('Error loading notifications:', error));
-                                            }
+                            // Load notifications
+                            function loadNotifications() {
+                                fetch('{{ route("notifications.recent") }}')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        updateNotificationBadge(data.unread_count);
+                                        renderNotifications(data.notifications);
+                                    })
+                                    .catch(error => console.error('Error loading notifications:', error));
+                            }
 
-                                            // Update badge
-                                            function updateNotificationBadge(count) {
-                                                const badge = document.getElementById('notificationBadge');
-                                                if (count > 0) {
-                                                    badge.textContent = count > 99 ? '99+' : count;
-                                                    badge.style.display = 'block';
-                                                } else {
-                                                    badge.style.display = 'none';
-                                                }
-                                            }
+                            // Update badge
+                            function updateNotificationBadge(count) {
+                                const badge = document.getElementById('notificationBadge');
+                                if (count > 0) {
+                                    badge.textContent = count > 99 ? '99+' : count;
+                                    badge.style.display = 'block';
+                                } else {
+                                    badge.style.display = 'none';
+                                }
+                            }
 
-                                            // Render notifications
-                                            function renderNotifications(notifications) {
-                                                const list = document.getElementById('notificationList');
+                            // Render notifications
+                            function renderNotifications(notifications) {
+                                const list = document.getElementById('notificationList');
 
-                                                if (notifications.length === 0) {
-                                                    list.innerHTML = `
-                                <li class="text-center py-4">
-                                    <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted mb-0 small">Không có thông báo mới</p>
+                                if (notifications.length === 0) {
+                                    list.innerHTML = `
+                                    <li class="text-center py-4">
+                                        <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                        <p class="text-muted mb-0 small">Không có thông báo mới</p>
+                                    </li>
+                                `;
+                                    return;
+                                }
+
+                                list.innerHTML = notifications.map(notif => `
+                                <li>
+                                    <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
+                                       href="{{ url('/') }}/notifications/${notif.notification_id}/read"
+                                       style="white-space: normal;">
+                                        <div class="d-flex align-items-start py-2">
+                                            <div class="me-3">
+                                                <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <p class="mb-1 fw-semibold small">${notif.title}</p>
+                                                <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
+                                                <small class="text-muted">${formatTime(notif.created_at)}</small>
+                                            </div>
+                                            ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
+                                        </div>
+                                    </a>
                                 </li>
-                            `;
-                                                    return;
-                                                }
+                            `).join('');
+                            }
 
-                                                list.innerHTML = notifications.map(notif => `
-                            <li>
-                                <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
-                                   href="{{ url('/') }}/notifications/${notif.notification_id}/read"
-                                   style="white-space: normal;">
-                                    <div class="d-flex align-items-start py-2">
-                                        <div class="me-3">
-                                            <i class="fas ${notif.icon} text-${notif.color}"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <p class="mb-1 fw-semibold small">${notif.title}</p>
-                                            <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
-                                            <small class="text-muted">${formatTime(notif.created_at)}</small>
-                                        </div>
-                                        ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
-                                    </div>
-                                </a>
-                            </li>
-                        `).join('');
-                                            }
+                            // Format time ago
+                            function formatTime(dateString) {
+                                const date = new Date(dateString);
+                                const now = new Date();
+                                const seconds = Math.floor((now - date) / 1000);
 
-                                            // Format time ago
-                                            function formatTime(dateString) {
-                                                const date = new Date(dateString);
-                                                const now = new Date();
-                                                const seconds = Math.floor((now - date) / 1000);
+                                if (seconds < 60) return 'Vừa xong';
+                                if (seconds < 3600) return Math.floor(seconds / 60) + ' phút trước';
+                                if (seconds < 86400) return Math.floor(seconds / 3600) + ' giờ trước';
+                                if (seconds < 604800) return Math.floor(seconds / 86400) + ' ngày trước';
 
-                                                if (seconds < 60) return 'Vừa xong';
-                                                if (seconds < 3600) return Math.floor(seconds / 60) + ' phút trước';
-                                                if (seconds < 86400) return Math.floor(seconds / 3600) + ' giờ trước';
-                                                if (seconds < 604800) return Math.floor(seconds / 86400) + ' ngày trước';
+                                return date.toLocaleDateString('vi-VN');
+                            }
 
-                                                return date.toLocaleDateString('vi-VN');
-                                            }
-
-                                            // Mark all as read
-                                            function markAllAsRead() {
-                                                fetch('{{ route("notifications.mark-all-read") }}', {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                                    }
-                                                })
-                                                    .then(response => response.json())
-                                                    .then(data => {
-                                                        if (data.success) {
-                                                            loadNotifications();
-                                                        }
-                                                    })
-                                                    .catch(error => console.error('Error:', error));
-                                            }
-                                        </script>
+                            // Mark all as read
+                            function markAllAsRead() {
+                                fetch('{{ route("notifications.mark-all-read") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    }
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            loadNotifications();
+                                        }
+                                    })
+                                    .catch(error => console.error('Error:', error));
+                            }
+                        </script>
                     @endpush
 
                     <!-- User Dropdown -->
@@ -536,7 +537,7 @@
                             {{ Auth::user()->name ?? 'User' }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('users.profile') }}">
+                            <li><a class="dropdown-item" href="{{ route('users.profile.info') }}">
                                     <i class="fas fa-user me-2"></i>Hồ sơ
                                 </a></li>
                             <li><a class="dropdown-item" href="#">
