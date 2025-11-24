@@ -89,6 +89,22 @@ Route::controller(TopicRequestController::class)->middleware('auth')->group(func
     Route::delete('/topic-requests/{topic_request}', 'destroy')->name('topic_requests.destroy');
 });
 
+
+Route::prefix('groups')->name('groups.')->group(function () {
+
+    Route::get('/', [GroupController::class, 'index'])->name('index');
+    Route::get('/create', [GroupController::class, 'create'])->name('create');
+    Route::post('/', [GroupController::class, 'store'])->name('store');
+
+    Route::get('/{id}', [GroupController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [GroupController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [GroupController::class, 'update'])->name('update');
+    Route::delete('/{id}', [GroupController::class, 'destroy'])->name('destroy');
+
+
+    Route::post('/{id}/assign-topic', [GroupController::class, 'assignTopic'])->name('assignTopic');
+});
+
 Route::middleware(['auth'])->group(function () {
 
 
@@ -177,7 +193,7 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     // Chi tiết nhóm
     Route::get('/groups/{id}', [UserDashboardController::class, 'groupDetail'])
         ->name('group_detail');
-
+  
 
     // ============================================================
     // INVITATIONS (Lời mời)
