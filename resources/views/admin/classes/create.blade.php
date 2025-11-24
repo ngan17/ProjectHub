@@ -28,10 +28,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                    <div class="col-md-4">
-                        <label for="max_students" class="form-label">Sĩ số tối đa</label>
-                        <input type="number" class="form-control" id="max_students" name="max_students" value="{{ old('max_students', 80) }}" min="10">
-                    </div>
+                  
                 </div>
 
                 <div class="row mb-4">

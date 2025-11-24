@@ -36,18 +36,7 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="credits" class="form-label">Số tín chỉ <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control @error('credits') is-invalid @enderror" id="credits" name="credits" value="{{ old('credits', 3) }}" min="1" required>
-                    @error('credits')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="description" class="form-label">Mô tả</label>
-                    <textarea class="form-control" id="description" name="description" rows="3">{{ old('description') }}</textarea>
-                </div>
+               
 
                 <div class="d-flex justify-content-end gap-2">
                     <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">Quay lại</a>

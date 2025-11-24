@@ -86,7 +86,7 @@
                             <th>Họ và tên</th>
                             <th>Email</th>
                             <th>Lớp học phần</th>
-                            <th class="text-center">Trạng thái</th>
+                            
                             <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
@@ -105,13 +105,7 @@
                                         </span>
                                     @endforeach
                                 </td>
-                                <td class="text-center">
-                                    @if($student->isHaveGroup)
-                                        <span class="badge bg-success">Đã có nhóm</span>
-                                    @else
-                                        <span class="badge bg-warning text-dark">Chưa có nhóm</span>
-                                    @endif
-                                </td>
+                              
                                 <td class="text-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('students.show', $student->user_id) }}" 

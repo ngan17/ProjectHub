@@ -45,8 +45,8 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'subject_code' => 'required|string|max:50|unique:subjects,subject_code',
             'subject_name' => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'credits'      => 'required|integer|min:1', // Số tín chỉ
+            
+           
         ], [
             'subject_code.unique' => 'Mã môn học này đã tồn tại.',
         ]);
@@ -75,8 +75,7 @@ class SubjectController extends Controller
         $validated = $request->validate([
             'subject_code' => ['required', 'string', 'max:50', Rule::unique('subjects')->ignore($id, 'subject_id')],
             'subject_name' => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'credits'      => 'required|integer|min:1',
+          
         ]);
 
         $subject->update($validated);

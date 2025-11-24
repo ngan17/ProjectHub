@@ -33,10 +33,7 @@ class TopicController extends Controller
             $classes = $user->classes;
 
         } elseif ($user->role === 'admin') {
-            // Admin: Không cần điều kiện where lecturer (xem tất cả)
-            
-            // List lớp (cho dropdown filter): Lấy TOÀN BỘ lớp trong hệ thống
-            // (Nhớ import model ClassSection ở đầu file)
+           
             $classes = ClassSection::with('subject')->get();
         }
 

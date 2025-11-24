@@ -5,7 +5,7 @@
         <div class="row mb-4">
             <div class="col-12">
                 <h1 class="display-5 fw-bold">Lecturer Dashboard</h1>
-                <p class="text-muted">Xin chào, {{ Auth::user()->username ?? Auth::user()->email }}</p>
+              
             </div>
         </div>
 
@@ -137,18 +137,7 @@
                                 $approvedTopics = isset($classStats[$class->class_id]) ? $classStats[$class->class_id]['approved'] : 0;
                                 $progress = $totalTopics > 0 ? round(($approvedTopics / $totalTopics) * 100) : 0;
                             @endphp
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Tiến độ phân công</small>
-                                    <small class="text-muted">{{ $progress }}%</small>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" role="progressbar" <?php    echo 'style="width: ' . $progress . '%"'; ?> aria-valuenow="{{ $progress }}" aria-valuemin="0"
-                                        aria-valuemax="100">
-                                    </div>
-                                </div>
-                            </div>
-
+                            
                             {{-- Action Buttons --}}
                             <div class="d-grid gap-2">
                                 <a href="{{ route('dashboard.class.detail', $class->class_id) }}" class="btn btn-primary">

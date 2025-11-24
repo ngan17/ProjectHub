@@ -25,7 +25,7 @@ class ChatbotController extends Controller
         
         $dbData = "";
         foreach ($topics as $t) {
-            $status = $t->assigned_group_id ? "Đã có nhóm" : "✅ Còn trống";
+            $status = $t->assigned_group_id ? "Đã có nhóm" : "Còn trống";
             $subject = $t->subject ? $t->subject->subject_name : "Chưa rõ môn";
             $dbData .= "- [{$t->topic_id}] {$t->name} (GV: {$t->lecturer}) - {$status}\n";
         }

@@ -13,7 +13,7 @@ class ClassSectionController extends Controller
 {
     public function index(Request $request)
     {
-        // Thay vì with('lecturer'), ta with('lecturers') để load quan hệ mới định nghĩa
+       
         $query = ClassSection::with(['subject', 'lecturers'])
                              ->withCount(['users', 'groups']);
 
@@ -65,13 +65,13 @@ class ClassSectionController extends Controller
         ]);
 
         try {
-            // 1. Tạo lớp (không lưu lecturer_id vào bảng class_sections)
+      
             $classData = collect($validated)->except('lecturer_id')->toArray();
             $class = ClassSection::create($classData);
 
-            // 2. Lưu giảng viên vào bảng trung gian user_classes
+
             if ($request->filled('lecturer_id')) {
-                // Kiểm tra role cho chắc chắn
+               
                 $lecturer = User::find($request->lecturer_id);
                 if ($lecturer && $lecturer->role === 'lecturer') {
                     $class->users()->attach($lecturer->user_id);
@@ -146,8 +146,7 @@ class ClassSectionController extends Controller
     {
         $class = ClassSection::findOrFail($id);
 
-        // Kiểm tra logic xóa: Có sinh viên (role=student) thì không cho xóa
-        // Ta đếm tổng user trừ đi số lượng giảng viên để biết có sinh viên hay không
+        
         $totalUsers = $class->users()->count();
         $totalLecturers = $class->lecturers()->count();
         $studentCount = $totalUsers - $totalLecturers;
