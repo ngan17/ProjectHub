@@ -4,18 +4,18 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2 class="mb-4 text-info">🎓 Bảng điều khiển Sinh viên</h2>
+    <h2 class="mb-4 text-info"> Bảng điều khiển Sinh viên</h2>
 
     <div class="row text-center">
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3">
-                <h5>👥 Nhóm của tôi</h5>
+                <h5> Nhóm của tôi</h5>
                 <h3>{{ $stats['my_group'] ? 'Đã có' : 'Chưa có' }}</h3>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card shadow-sm border-0 p-3">
-                <h5>📨 Lời mời</h5>
+                <h5>Lời mời</h5>
                 <h3>{{ $stats['pending_invites'] }}</h3>
             </div>
         </div>
@@ -31,7 +31,7 @@
 
     @if($userGroup)
         <div class="alert alert-success">
-            ✅ Bạn đang trong nhóm: <strong>{{ $userGroup->group_name }}</strong>
+            Bạn đang trong nhóm: <strong>{{ $userGroup->group_name }}</strong>
         </div>
     @endif
 
@@ -47,7 +47,7 @@
         @endforelse
     </ul>
 
-    <h5>📢 Đề tài khả dụng</h5>
+    <h5> Đề tài khả dụng</h5>
     <div class="list-group">
         @forelse($availableTopics as $topic)
             <div class="list-group-item">

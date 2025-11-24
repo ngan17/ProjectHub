@@ -369,23 +369,7 @@
                     <span>Đề tài của tôi</span>
                 </a>
 
-                <hr>
-
-                <!-- Classes -->
-                <a href="{{ route('user.classes') }}"
-                    class="nav-link {{ request()->routeIs('user.classes*') ? 'active' : '' }}">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <span>Lớp học</span>
-                </a>
-
-                <!-- Subjects -->
-                <a href="{{ route('user.subjects') }}"
-                    class="nav-link {{ request()->routeIs('user.subjects*') ? 'active' : '' }}">
-                    <i class="fas fa-book-open"></i>
-                    <span>Môn học</span>
-                </a>
-
-                <hr>
+         
 
                 <!-- Logout -->
                 <form action="{{ route('logout') }}" method="POST" class="d-inline">

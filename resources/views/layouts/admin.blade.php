@@ -270,7 +270,7 @@
     <div class="d-flex">
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-            <!-- Logo - GIỮ NGUYÊN HÌNH CHỮ NHẬT -->
+
             <div class="logo">
                 <img src="{{ asset('logo.png') }}" alt="Logo">
             </div>
@@ -298,39 +298,23 @@
                 </a>
 
                 <!-- Students -->
-                <a href="{{ route('students.index') }}"
-                    class="nav-link {{ request()->routeIs('students.*') ? 'active' : '' }}">
+                <a href="/admin/users" 
+                   class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate"></i>
-                    <span>Sinh viên</span>
+                    <span>Người dùng</span>
                 </a>
 
-                <!-- Topic Requests -->
-                <a href="{{ route('topic_requests.index') }}"
-                    class="nav-link {{ request()->routeIs('topic_requests.*') ? 'active' : '' }}">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>Duyệt đăng ký</span>
+                <a href="{{ route('classes.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Lớp học</span>
                 </a>
-                @if(Auth::user()->role == 'admin')
-                    <!-- Phần Admin: Chỉ hiện nếu role là admin -->
-                    <a href="{{ route('admin.users.index') }}" 
-                       class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Người dùng</span>
-                    </a>
 
-                    <a href="{{ route('admin.classes.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.classes.*') ? 'active' : '' }}">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Lớp học</span>
-                    </a>
-
-                    <a href="{{ route('admin.subjects.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
-                        <i class="fas fa-book"></i>
-                        <span>Môn học</span>
-                    </a>
-                @endif
-
+                <a href="{{ route('admin.subjects.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Môn học</span>
+                </a>
                 <hr>
 
                 <!-- Settings -->
@@ -434,33 +418,33 @@
 
                                 if (notifications.length === 0) {
                                     list.innerHTML = `
-                                    <li class="text-center py-4">
-                                        <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
-                                        <p class="text-muted mb-0 small">Không có thông báo mới</p>
-                                    </li>
-                                `;
+                                        <li class="text-center py-4">
+                                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                            <p class="text-muted mb-0 small">Không có thông báo mới</p>
+                                        </li>
+                                    `;
                                     return;
                                 }
 
                                 list.innerHTML = notifications.map(notif => `
-                                <li>
-                                    <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
-                                       href="{{ url('/') }}/notifications/${notif.notification_id}/read"
-                                       style="white-space: normal;">
-                                        <div class="d-flex align-items-start py-2">
-                                            <div class="me-3">
-                                                <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                    <li>
+                                        <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
+                                           href="{{ url('/') }}/notifications/${notif.notification_id}/read"
+                                           style="white-space: normal;">
+                                            <div class="d-flex align-items-start py-2">
+                                                <div class="me-3">
+                                                    <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1 fw-semibold small">${notif.title}</p>
+                                                    <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
+                                                    <small class="text-muted">${formatTime(notif.created_at)}</small>
+                                                </div>
+                                                ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
                                             </div>
-                                            <div class="flex-grow-1">
-                                                <p class="mb-1 fw-semibold small">${notif.title}</p>
-                                                <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
-                                                <small class="text-muted">${formatTime(notif.created_at)}</small>
-                                            </div>
-                                            ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
-                                        </div>
-                                    </a>
-                                </li>
-                            `).join('');
+                                        </a>
+                                    </li>
+                                `).join('');
                             }
 
                             // Format time ago

@@ -141,10 +141,7 @@
                 @endforelse
             </div>
 
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center mt-4">
-                {{ $groups->links() }}
-            </div>
+           
         </div>
     </div>
 </div>

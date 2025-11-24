@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\TopicController;
@@ -10,14 +11,25 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\StudentController;
-use Illuminate\Support\Facades\Route;
+
+
 
 Route::get('/', function () {
-    return view('welcome');
-});
-Route::get('/', function () {
-    return redirect()->route('groups.index');
-});
+    if (Illuminate\Support\Facades\Auth::check()) {
+        // Nếu đã login (nhờ remember), redirect về dashboard dựa role
+        $user = Illuminate\Support\Facades\Auth::user();
+        if ($user->role === 'student') {
+            return redirect()->route('user.dashboard');
+        } elseif ($user->role === 'lecturer') {
+            return redirect()->route('dashboard');
+        } elseif ($user->role === 'admin') {
+            return redirect()->route('admin.users.index');
+        }
+        return redirect('/dashboard');  // Default
+    }
+    // Chưa login → Về login
+    return redirect('/login');
+})->name('home');
 
 Route::resource('groups', GroupController::class);
 Route::resource('topics', TopicController::class);
@@ -47,7 +59,6 @@ Route::get('/requests', function () {
 
 
 
-Route::get('/', fn() => redirect('/login'));
 
 //  Auth routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -225,7 +236,7 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::post('/join-requests/{requestId}/reject', [UserDashboardController::class, 'rejectJoinRequest'])
         ->name('reject-join-request');
 
-
+    Route::delete('/groups/{id}/leave', [UserDashboardController::class, 'leaveGroup'])->name('leave_group');
     // ============================================================
     // CLASSES (Lớp học)
     // ============================================================
@@ -251,4 +262,15 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::get('/subjects/{id}', [UserDashboardController::class, 'subjectDetail'])
         ->name('subject_detail');
 });
+
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\SubjectController;
+
+// Đổi 'role:admin' thành 'admin'
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('admin/users', AdminController::class, ['as' => 'admin']);
+    Route::resource('admin/subjects', SubjectController::class, ['as' => 'admin']);
+    Route::resource('admin/classes', ClassSectionController::class, ['as' => 'admin']);
+});
+
 Route::post('/chatbot/ask', [ChatbotController::class, 'ask'])->name('chatbot.ask')->middleware('auth');

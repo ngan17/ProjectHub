@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Log;
 class AuthController extends Controller
 {
     public function showLoginForm()
@@ -12,30 +12,51 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+ public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+    $remember = $request->boolean('remember');
+    Log::info('Remember input from checkbox: ' . ($remember ? 'true' : 'false'));
 
-            $user = Auth::user();
+    if (Auth::attempt($credentials, $remember)) {
+        $request->session()->regenerate();  // Regenerate ngay sau attempt, trước redirect
 
-            
-            if ($user->role === 'student') {
-                return redirect()->route(route: 'user.dashboard');
-            } elseif ($user->role === 'lecturer') {
-                return redirect()->route(route: 'dashboard');
-            };
+        $user = Auth::user();
+        Log::info('Remember token in DB after login: ' . $user->getRememberToken());  // Phải random dài ~100 ký tự nếu remember=true
+        Log::info('Config remember minutes: ' . config('auth.guards.web.remember'));  // Phải 2628000 (5 năm)
+
+        // Role redirect với response thật
+        if ($user->role === 'student') {
+            $response = redirect()->route('user.dashboard');
+        } elseif ($user->role === 'lecturer') {
+            $response = redirect()->route('dashboard');
+        } elseif ($user->role === 'admin') {
+            $response = redirect()->route('admin.users.index');
+        } else {
+            $response = redirect()->intended('/');  // Default
         }
 
-        return back()->withErrors([
-            'email' => 'Email hoặc mật khẩu không đúng.',
-        ]);
+        // Log cookie expire từ response thật
+        $cookies = $response->headers->getCookies();
+        foreach ($cookies as $cookie) {
+            if (strpos($cookie->getName(), 'remember_web') !== false) {
+                Log::info('Remember cookie name: ' . $cookie->getName());
+                Log::info('Remember cookie expires at: ' . date('Y-m-d H:i:s', $cookie->getExpiresTime(true)));  // Format dễ đọc (timestamp → date)
+                Log::info('Remember cookie value: ' . $cookie->getValue());  // Base64 token
+            }
+        }
+
+        return $response;  // Return response thật
     }
+
+    return back()->withErrors([
+        'email' => 'Email hoặc mật khẩu không đúng.',
+    ]);
+}
 
     public function logout(Request $request)
     {

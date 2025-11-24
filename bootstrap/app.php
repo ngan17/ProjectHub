@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
 ->withMiddleware(function (Middleware $middleware) {
     $middleware->alias([
         'user' => \App\Http\Middleware\CheckUserRole::class,
-        'admin' => \App\Http\Middleware\CheckUserRole::class,
+        'admin' => \App\Http\Middleware\CheckAdminRole::class,
         'lecturer' => \App\Http\Middleware\CheckLecturerRole::class,
     ]);
 })

@@ -127,7 +127,7 @@
                                             <th>Ngày đăng ký</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                   <tbody>
                                         @foreach ($requests as $index => $req)
                                             <tr>
                                                 <td>{{ $index + 1 }}</td>
@@ -136,12 +136,34 @@
                                                 </td>
                                                 <td>{{ $req->user->name ?? '—' }}</td>
                                                 <td class="text-center">
-                                                    @if ($req->status === 'Pending')
-                                                        <span class="badge bg-warning text-dark">Đang chờ</span>
-                                                    @elseif ($req->status === 'Approved')
-                                                        <span class="badge bg-success">Đã duyệt</span>
+                                                    @php
+                                                        // Lấy ID nhóm đang được gán chính thức cho đề tài này
+                                                        $assignedGroupId = $req->topic->assigned_group_id ?? null;
+                                                        $currentGroupId  = $req->group_id;
+                                                    @endphp
+
+                                                    @if ($assignedGroupId)
+                                                        {{-- Trường hợp 1: Đề tài ĐÃ CÓ chủ --}}
+                                                        @if ($assignedGroupId == $currentGroupId)
+                                                            {{-- Chính là nhóm này --}}
+                                                            <span class="badge bg-success">
+                                                                <i class="fas fa-check-circle me-1"></i>Đã duyệt
+                                                            </span>
+                                                        @else
+                                                            {{-- Là nhóm khác --}}
+                                                            <span class="badge bg-secondary" title="Đề tài đã được gán cho nhóm khác">
+                                                                <i class="fas fa-ban me-1"></i>Đã có nhóm khác
+                                                            </span>
+                                                        @endif
                                                     @else
-                                                        <span class="badge bg-danger">Từ chối</span>
+                                                        {{-- Trường hợp 2: Đề tài CHƯA CÓ chủ (Null) -> Check trạng thái request --}}
+                                                        @if ($req->status === 'Rejected')
+                                                            <span class="badge bg-danger">Từ chối</span>
+                                                        @else
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="fas fa-clock me-1"></i>Đang chờ
+                                                            </span>
+                                                        @endif
                                                     @endif
                                                 </td>
                                                 <td>{{ $req->created_at?->format('d/m/Y H:i') ?? '—' }}</td>

@@ -55,7 +55,7 @@ class GroupController extends Controller
         $user = Auth::user();
         
         // Nếu là lecturer, chỉ cho tạo nhóm trong lớp mình dạy
-        if ($user->role === 'lecturer') {
+        if ($user->role === 'lecturer' or $user->role === 'admin') {
             $classes = $user->classes;
         } else {
             $classes = ClassSection::with('subject')->get();

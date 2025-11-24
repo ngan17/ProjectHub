@@ -121,6 +121,34 @@ class UserDashboardController extends Controller
         ));
     }
 
+    public function leaveGroup($groupId)
+    {
+        $user = Auth::user();
+        $group = Groups::findOrFail($groupId);
+
+        // 1. Kiểm tra xem user có phải là thành viên không
+        $isMember = \App\Models\Group_Members::where('group_id', $groupId)
+                    ->where('user_id', $user->user_id)
+                    ->exists();
+
+        if (!$isMember) {
+            return back()->with('error', 'Bạn không phải là thành viên của nhóm này!');
+        }
+
+        // 2. Không cho trưởng nhóm rời (phải chuyển quyền hoặc xóa nhóm)
+        if ($group->leader_id == $user->user_id) {
+            return back()->with('error', 'Trưởng nhóm không thể rời nhóm. Hãy xóa nhóm hoặc chuyển quyền trưởng nhóm!');
+        }
+
+        // 3. Thực hiện xóa user khỏi bảng group_members
+        \App\Models\Group_Members::where('group_id', $groupId)
+            ->where('user_id', $user->user_id)
+            ->delete();
+
+        return redirect()->route('user.my_groups')
+            ->with('success', 'Bạn đã rời nhóm thành công!');
+    }
+
     /**
      * Đăng ký đề tài cho nhóm
      */
@@ -223,27 +251,38 @@ class UserDashboardController extends Controller
     /**
      * Danh sách nhóm của tôi
      */
-    public function myGroups()
-    {
-        $user = Auth::user();
+public function myGroups()
+{
+    $user = Auth::user();
 
-        $groups = Groups::where('leader_id', $user->user_id)
-            ->orWhereHas('members', function ($query) use ($user) {
-                $query->where('group_members.user_id', $user->user_id);
-            })
-            ->with(['leader', 'topic', 'members', 'class.subject'])
-            ->withCount('members')
-            ->paginate(9);
-
-        $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
-            $query->where('users.user_id', $user->user_id);
+    // ... (Code cũ giữ nguyên) ...
+    $groups = Groups::where('leader_id', $user->user_id)
+        ->orWhereHas('members', function ($query) use ($user) {
+            $query->where('group_members.user_id', $user->user_id);
         })
-            ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
-            ->get();
+        ->with(['leader', 'topic', 'members', 'class.subject'])
+        ->withCount('members')
+        ->paginate(9);
 
-        return view('user.my_groups', compact('groups', 'userClasses'));
-    }
+    $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
+        $query->where('users.user_id', $user->user_id);
+    })
+    ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
+    ->get();
 
+    $joinedClassIds = Groups::query()
+        ->select('class_id')
+        ->where('leader_id', $user->user_id) // Là trưởng nhóm
+        ->orWhereHas('members', function($q) use ($user) {
+            $q->where('group_members.user_id', $user->user_id); // Hoặc là thành viên
+        })
+        ->pluck('class_id')
+        ->unique()
+        ->toArray();
+
+    // Truyền thêm $joinedClassIds sang view
+    return view('user.my_groups', compact('groups', 'userClasses', 'joinedClassIds'));
+}
     /**
      * Form tạo nhóm mới
      */

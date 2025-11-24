@@ -12,33 +12,53 @@ class TopicController extends Controller
     /**
      * Display a listing of the topics.
      */
-    public function index(Request $request)
+  public function index(Request $request)
     {
         $user = Auth::user();
-           if ($user->role=='student') return  abort(403, 'Bạn không có quyền ');
-        if ($user->role === 'lecturer') {
-            $query = Topics::where('lecturer', $user->name)
-                           ->with(['class.subject', 'topic_requests']);
-            
-            // Filter theo class nếu có
-            if ($request->filled('class_id')) {
-                $query->where('class_id', $request->class_id);
-            }
-            
-            // Search theo tên
-            if ($request->filled('search')) {
-                $query->where('name', 'like', '%' . $request->search . '%');
-            }
-            
-            $topics = $query->paginate(10)->withQueryString();
-            
-            // CHỈ lấy các lớp mà lecturer đang dạy (property, không có dấu ngoặc)
-            $classes = $user->classes; // <-- SỬA Ở ĐÂY
+
+        // 1. Chặn sinh viên
+        if ($user->role == 'student') {
+            return abort(403, 'Bạn không có quyền truy cập quản lý đề tài.');
         }
+
+        // 2. Khởi tạo query cơ bản (Load sẵn quan hệ)
+        $query = Topics::with(['class.subject', 'topic_requests']);
+
+        // 3. Phân chia logic theo Role để lấy dữ liệu ban đầu
+        if ($user->role === 'lecturer') {
+            // Giảng viên: Chỉ lấy đề tài do mình tạo
+            $query->where('lecturer', $user->name);
+            
+            // List lớp (cho dropdown filter): Chỉ lấy lớp mình dạy
+            $classes = $user->classes;
+
+        } elseif ($user->role === 'admin') {
+            // Admin: Không cần điều kiện where lecturer (xem tất cả)
+            
+            // List lớp (cho dropdown filter): Lấy TOÀN BỘ lớp trong hệ thống
+            // (Nhớ import model ClassSection ở đầu file)
+            $classes = ClassSection::with('subject')->get();
+        }
+
+        // 4. Áp dụng bộ lọc chung (Dùng cho cả Admin và Lecturer)
+        
+        // Filter theo lớp
+        if ($request->filled('class_id')) {
+            $query->where('class_id', $request->class_id);
+        }
+        
+        // Search theo tên đề tài
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        
+        // 5. Thực hiện truy vấn và phân trang
+        $topics = $query->orderBy('created_at', 'desc') // Nên sắp xếp mới nhất lên đầu
+                        ->paginate(10)
+                        ->withQueryString();
         
         return view('topics.index', compact('topics', 'classes'));
     }
-
     /**
      * Show the form for creating a new topic.
      */

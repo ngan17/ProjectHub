@@ -211,7 +211,7 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-secondary">
-                                                        {{ optional($request->topic->class)->class_code ?? 'N/A' }}
+                                                        {{ optional($request->topic->class)->class_name ?? 'N/A' }}
                                                     </span>
                                                 </td>
                                                 <td>{{ Str::limit($request->topic->name ?? '', 30) }}</td>

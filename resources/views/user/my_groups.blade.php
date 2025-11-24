@@ -201,68 +201,107 @@
                                 <div class="row g-3">
                                     @forelse($class->groups as $classGroup)
                                         @php
-                                            $isMember = $classGroup->members->contains('user_id', Auth::id()) || $classGroup->leader_id == Auth::id();
-                                            $hasPendingRequest = $classGroup->joinRequests()
-                                                ->where('member_id', Auth::id())
-                                                ->where('status', 'Pending')
-                                                ->exists();
-                                        @endphp
+        // 1. Check xem có phải thành viên nhóm này ko
+        $isMember = $classGroup->members->contains('user_id', Auth::id()) || $classGroup->leader_id == Auth::id();
+        
+        // 2. Check xem có yêu cầu đang chờ ko
+        $hasPendingRequest = $classGroup->joinRequests()
+            ->where('member_id', Auth::id())
+            ->where('status', 'Pending')
+            ->exists();
 
-                                        <div class="col-12 col-md-6 col-lg-4">
-                                            <div class="card h-100 border {{ $isMember ? 'border-success' : '' }}">
-                                                <div class="card-body p-3">
-                                                    <h6 class="mb-3 fw-bold" 
-                                                        style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
-                                                        title="{{ $classGroup->group_name }}">
-                                                        {{ $classGroup->group_name }}
-                                                    </h6>
+        // 3. Tính tổng thành viên (Leader + Members)
+        // Giả sử count() chỉ đếm members trong bảng phụ, cộng thêm 1 leader
+        $totalMembers = $classGroup->members->count() + 1;
+        $isFull = $totalMembers >= 5; // Giới hạn 5 người
 
-                                                    <div class="mb-3">
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <i class="fas fa-user-tie text-muted me-2" style="width: 18px;"></i>
-                                                            <small class="text-muted text-truncate">{{ $classGroup->leader->name }}</small>
-                                                        </div>
-                                                        <div class="d-flex align-items-center mb-2">
-                                                            <i class="fas fa-users text-muted me-2" style="width: 18px;"></i>
-                                                            <small class="text-muted">{{ $classGroup->members->count() + 1 }} thành viên</small>
-                                                        </div>
-                                                        @if($classGroup->topic)
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="fas fa-lightbulb text-warning me-2" style="width: 18px;"></i>
-                                                                <small class="text-muted">
-                                                                    <i class="fas fa-check-circle text-success me-1"></i>
-                                                                    Đã có đề tài
-                                                                </small>
-                                                            </div>
-                                                        @endif
-                                                    </div>
+        // 4. Check xem user đã có nhóm KHÁC trong lớp này chưa
+        // (Dựa vào mảng joinedClassIds truyền từ controller)
+        // Nếu $isMember = true thì dòng này cũng true, nhưng ta sẽ ưu tiên check $isMember trước
+        $alreadyHasGroupInClass = in_array($classGroup->class_id, $joinedClassIds ?? []);
+    @endphp
 
-                                                    @if($isMember)
-                                                        <div class="d-grid">
-                                                            <span class="badge bg-success py-2">
-                                                                <i class="fas fa-check me-1"></i>Đã tham gia
-                                                            </span>
-                                                        </div>
-                                                    @elseif($hasPendingRequest)
-                                                        <div class="d-grid">
-                                                            <span class="badge bg-warning py-2">
-                                                                <i class="fas fa-clock me-1"></i>Đang chờ duyệt
-                                                            </span>
-                                                        </div>
-                                                    @else
-                                                        <form action="{{ route('user.send-join-request') }}" method="POST">
-                                                            @csrf
-                                                            <input type="hidden" name="group_id" value="{{ $classGroup->group_id }}">
-                                                            <div class="d-grid">
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="fas fa-paper-plane me-1"></i>Xin tham gia
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card h-100 border {{ $isMember ? 'border-success' : '' }}">
+            <div class="card-body p-3">
+                {{-- Phần hiển thị tên nhóm và info giữ nguyên --}}
+                <h6 class="mb-3 fw-bold" title="{{ $classGroup->group_name }}">
+                    {{ $classGroup->group_name }}
+                </h6>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-user-tie text-muted me-2"></i>
+                        <small class="text-muted">{{ $classGroup->leader->name }}</small>
+                    </div>
+                    
+                    {{-- Hiển thị số lượng thành viên có màu sắc cảnh báo nếu đầy --}}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-users {{ $isFull ? 'text-danger' : 'text-muted' }} me-2"></i>
+                        <small class="{{ $isFull ? 'text-danger fw-bold' : 'text-muted' }}">
+                            {{ $totalMembers }}/5 thành viên
+                        </small>
+                    </div>
+
+                    @if($classGroup->topic)
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            <small class="text-muted">Đã có đề tài</small>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- LOGIC NÚT BẤM --}}
+                <div class="mt-auto">
+                    @if($isMember)
+                        {{-- TH1: Đã là thành viên của chính nhóm này --}}
+                        <div class="d-grid">
+                            <span class="badge bg-success py-2">
+                                <i class="fas fa-check me-1"></i>Đã tham gia
+                            </span>
+                        </div>
+
+                    @elseif($hasPendingRequest)
+                        {{-- TH2: Đang chờ duyệt --}}
+                        <div class="d-grid">
+                            <span class="badge bg-warning py-2">
+                                <i class="fas fa-clock me-1"></i>Đang chờ duyệt
+                            </span>
+                        </div>
+
+                    @elseif($alreadyHasGroupInClass)
+                        {{-- TH3: Đã tham gia một nhóm KHÁC trong lớp này --}}
+                        {{-- Disable nút và báo đã có nhóm --}}
+                        <div class="d-grid">
+                            <button class="btn btn-secondary disabled" disabled style="opacity: 0.7; cursor: not-allowed;">
+                                <i class="fas fa-ban me-1"></i>Bạn đã có nhóm lớp này
+                            </button>
+                        </div>
+
+                    @elseif($isFull)
+                        {{-- TH4: Nhóm này đã đầy --}}
+                        <div class="d-grid">
+                            <button class="btn btn-danger disabled" disabled style="opacity: 0.7; cursor: not-allowed;">
+                                <i class="fas fa-user-slash me-1"></i>Nhóm đã đầy
+                            </button>
+                        </div>
+
+                    @else
+                        {{-- TH5: Chưa có nhóm & Nhóm này còn chỗ -> Cho phép xin vào --}}
+                        <form action="{{ route('user.send-join-request') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="group_id" value="{{ $classGroup->group_id }}">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>Xin tham gia
+                                </button>
+                            </div>
+                        </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
                                     @empty
                                         <div class="col-12">
                                             <div class="text-center py-5">

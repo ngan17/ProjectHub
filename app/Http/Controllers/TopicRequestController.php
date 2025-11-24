@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Topic_requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 class TopicRequestController extends Controller
 {
     /**
@@ -43,18 +43,49 @@ class TopicRequestController extends Controller
     /**
      * Approve the specified topic request.
      */
-    public function approve(Topic_requests $topic_request)
+public function approve($id)
     {
-        // Kiểm tra quyền: chỉ lecturer mới được phép duyệt
-         $userRole = Auth::user()->role;
-        if ( $userRole != 'lecturer') {
-            abort(403, 'Không có quyên try cập '.$userRole);
+        $topicRequest = Topic_requests::with(['group', 'topic'])->findOrFail($id);
+        $user = Auth::user();
+
+        // 1. Kiểm tra quyền: chỉ lecturer (và phải là GV hướng dẫn của đề tài đó) mới được duyệt
+        if ($user->role !== 'lecturer') {
+            abort(403, 'Bạn không có quyền thực hiện hành động này.');
         }
 
-        $topic_request->update(['status' => 'Accepted']);
-        $topic_request->group->update(['topic_id' => $topic_request->topic_id]);
+        // (Tùy chọn) Kiểm tra xem GV này có phải chủ đề tài không
+        // if ($topicRequest->topic->lecturer !== $user->name) { ... }
 
-        return back()->with('success', 'Yêu cầu đã được phê duyệt');
+        DB::transaction(function () use ($topicRequest) {
+            // 2. Cập nhật trạng thái request hiện tại
+            $topicRequest->update(['status' => 'Accepted']);
+
+            // 3. Cập nhật topic_id cho Nhóm (Quan trọng: như bạn yêu cầu)
+            if ($topicRequest->group) {
+                $topicRequest->group->update(['topic_id' => $topicRequest->topic_id]);
+            }
+
+            // 4. Cập nhật assigned_group_id cho Đề tài (Để khóa đề tài, không cho nhóm khác chọn)
+            if ($topicRequest->topic) {
+                $topicRequest->topic->update(['assigned_group_id' => $topicRequest->group_id]);
+            }
+
+            // 5. Dọn dẹp các request còn lại (Logic tự động từ chối)
+            
+            // -> Từ chối các request khác đang chờ duyệt cho CÙNG ĐỀ TÀI này (vì đã có chủ)
+            Topic_requests::where('topic_id', $topicRequest->topic_id)
+                ->where('request_id', '!=', $topicRequest->request_id)
+                ->where('status', 'Pending')
+                ->update(['status' => 'Rejected']);
+
+            // -> Từ chối các request khác của CÙNG NHÓM này cho các đề tài khác (vì nhóm đã có đề tài)
+            Topic_requests::where('group_id', $topicRequest->group_id)
+                ->where('request_id', '!=', $topicRequest->request_id)
+                ->where('status', 'Pending')
+                ->update(['status' => 'Rejected']);
+        });
+        
+        return back()->with('success', 'Đã duyệt yêu cầu! Nhóm đã được gán đề tài chính thức.');
     }
 
     /**

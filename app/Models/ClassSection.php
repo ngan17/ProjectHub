@@ -49,10 +49,20 @@ class ClassSection extends Model
     {
         return $this->belongsToMany(
             User::class,
-            'user_classes',      // Tên bảng pivot (phải giống với User model)
-            'class_id',          // Foreign key của ClassSection trên bảng pivot
-            'user_id'            // Foreign key của User trên bảng pivot
+            'user_classes',      
+            'class_id',         
+            'user_id'           
         );
+    }
+public function getLecturerAttribute()
+    {
+        // Phải có ->first() để lấy object đầu tiên ra khỏi danh sách
+        return $this->lecturers->first(); 
+    }
+    public function lecturers()
+    {
+        return $this->belongsToMany(User::class, 'user_classes', 'class_id', 'user_id')
+                    ->where('role', 'lecturer');
     }
       public function topics()
     {
