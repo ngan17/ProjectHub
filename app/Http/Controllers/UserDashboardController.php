@@ -160,7 +160,10 @@ class UserDashboardController extends Controller
         ]);
 
         $group = Groups::findOrFail($validated['group_id']);
-
+        $topic = Topics::findOrFail($validated['topic_id']);
+        if ($group->class_id !== $topic->class_id) {
+            return back()->with('error', 'Nhóm và đề tài phải thuộc cùng một lớp mới được đăng ký!');
+        }
         // Chỉ trưởng nhóm mới được gửi request
         if (!$this->isGroupLeader($group)) {
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể đăng ký đề tài!');
@@ -219,7 +222,9 @@ class UserDashboardController extends Controller
             return back()->with('error', 'Bạn không có quyền hủy đăng ký này!');
         }
 
-        $topicRequest->delete();
+        // Cập nhật trạng thái thay vì xóa
+        $topicRequest->status = 'Cancelled'; // hoặc 'Đã hủy'
+        $topicRequest->save();
 
         return back()->with('success', 'Đã hủy đăng ký đề tài!');
     }
@@ -307,10 +312,14 @@ class UserDashboardController extends Controller
         $user = Auth::user();
 
         // Kiểm tra user đã là leader của nhóm nào chưa
-        $existingLeaderGroup = Groups::where('leader_id', $user->user_id)->first();
+        $existingLeaderGroup = Groups::where('leader_id', $user->user_id)
+            ->where('class_id', $validated['class_id'])
+            ->first();
+
         if ($existingLeaderGroup) {
-            return back()->with('error', 'Bạn đã là trưởng nhóm của nhóm "' . $existingLeaderGroup->group_name . '"!');
+            return back()->with('error', 'Bạn đã là trưởng nhóm của nhóm "' . $existingLeaderGroup->group_name . '" trong lớp này!');
         }
+
 
         // Kiểm tra user đã tham gia nhóm nào chưa trong cùng lớp
         $existingMemberGroup = Groups::where('class_id', $validated['class_id'])
@@ -407,8 +416,8 @@ class UserDashboardController extends Controller
             return back()->with('error', 'Chỉ trưởng nhóm mới có thể mời thành viên!');
         }
         if ($group->members()->count() >= 4) {
-        return back()->with('error', 'Nhóm đã đủ 5 thành viên, không thể mời thêm!');
-    }
+            return back()->with('error', 'Nhóm đã đủ 5 thành viên, không thể mời thêm!');
+        }
         // Kiểm tra user đã là thành viên chưa
         if ($this->isUserInGroup($group, $validated['member_id'])) {
             return back()->with('error', 'Người này đã là thành viên của nhóm!');

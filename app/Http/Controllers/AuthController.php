@@ -26,8 +26,8 @@ class AuthController extends Controller
         $request->session()->regenerate();  // Regenerate ngay sau attempt, trước redirect
 
         $user = Auth::user();
-        Log::info('Remember token in DB after login: ' . $user->getRememberToken());  // Phải random dài ~100 ký tự nếu remember=true
-        Log::info('Config remember minutes: ' . config('auth.guards.web.remember'));  // Phải 2628000 (5 năm)
+        Log::info('Remember token in DB after login: ' . $user->getRememberToken());  
+        Log::info('Config remember minutes: ' . config('auth.guards.web.remember'));  
 
         // Role redirect với response thật
         if ($user->role === 'student') {
@@ -45,12 +45,12 @@ class AuthController extends Controller
         foreach ($cookies as $cookie) {
             if (strpos($cookie->getName(), 'remember_web') !== false) {
                 Log::info('Remember cookie name: ' . $cookie->getName());
-                Log::info('Remember cookie expires at: ' . date('Y-m-d H:i:s', $cookie->getExpiresTime(true)));  // Format dễ đọc (timestamp → date)
+                Log::info('Remember cookie expires at: ' . date('Y-m-d H:i:s', $cookie->getExpiresTime(true))); 
                 Log::info('Remember cookie value: ' . $cookie->getValue());  // Base64 token
             }
         }
 
-        return $response;  // Return response thật
+        return $response; 
     }
 
     return back()->withErrors([
