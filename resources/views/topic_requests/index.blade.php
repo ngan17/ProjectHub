@@ -68,14 +68,8 @@
                                                     <i class="fas fa-times"></i> Từ chối
                                                 </button>
                                             </form>
-                                        @else
-                                            <form action="{{ route('topic_requests.destroy', $req) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                                    <i class="fas fa-trash"></i> Xóa
-                                                </button>
-                                            </form>
+                               
+                                           
                                         @endif
                                     </td>
                                 </tr>

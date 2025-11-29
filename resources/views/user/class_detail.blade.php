@@ -26,7 +26,7 @@
             <div class="row g-4">
                 <div class="col-md-6">
                     <p class="text-muted mb-1">Môn học</p>
-                    <p class="h5 fw-bold">{{ $class->subject->name ?? 'N/A' }}</p>
+                    <p class="h5 fw-bold">{{ $class->subject->subject_name ?? 'N/A' }}</p>
                 </div>
                 <div class="col-md-6">
                     <p class="text-muted mb-1">Giảng viên</p>

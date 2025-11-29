@@ -40,15 +40,8 @@ class AuthController extends Controller
             $response = redirect()->intended('/');  // Default
         }
 
-        // Log cookie expire từ response thật
-        $cookies = $response->headers->getCookies();
-        foreach ($cookies as $cookie) {
-            if (strpos($cookie->getName(), 'remember_web') !== false) {
-                Log::info('Remember cookie name: ' . $cookie->getName());
-                Log::info('Remember cookie expires at: ' . date('Y-m-d H:i:s', $cookie->getExpiresTime(true))); 
-                Log::info('Remember cookie value: ' . $cookie->getValue());  // Base64 token
-            }
-        }
+
+       
 
         return $response; 
     }

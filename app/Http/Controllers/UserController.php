@@ -94,8 +94,12 @@ class UserController extends Controller
 public function editProfile()
     {
         $user = Auth::user();
-        // Trả về view riêng cho sửa thông tin
-        return view('users.profile-info', compact('user'));
+          if ($user->role == 'student') {
+            return view('users.profile-info', ['user' => $user]);
+        }
+        
+        return view('users.profile-admin', ['user' => $user]);
+        
     }
 
     /**
@@ -125,8 +129,12 @@ public function editProfile()
     public function changePasswordForm()
     {
         $user = Auth::user();
-        // Trả về view riêng cho đổi mật khẩu
-        return view('users.profile-password', compact('user'));
+         if ($user->role == 'student') {
+            return view('users.profile-password', ['user' => $user]);
+        }
+        
+        return view('users.profile-admin-password', ['user' => $user]);
+       
     }
 
     /**

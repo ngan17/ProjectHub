@@ -115,10 +115,7 @@
                                        class="btn btn-sm btn-outline-primary flex-fill">
                                         <i class="fas fa-eye"></i> Xem
                                     </a>
-                                    <a href="{{ route('groups.edit', $group->group_id) }}" 
-                                       class="btn btn-sm btn-outline-warning flex-fill">
-                                        <i class="fas fa-edit"></i> Sửa
-                                    </a>
+                                   
                                     <form action="{{ route('groups.destroy', $group->group_id) }}" 
                                           method="POST" 
                                           class="flex-fill"

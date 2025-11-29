@@ -16,20 +16,21 @@ class TopicController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Chặn sinh viên
+
         if ($user->role == 'student') {
             return abort(403, 'Bạn không có quyền truy cập quản lý đề tài.');
         }
 
-        // 2. Khởi tạo query cơ bản (Load sẵn quan hệ)
+     
         $query = Topics::with(['class.subject', 'topic_requests']);
 
-        // 3. Phân chia logic theo Role để lấy dữ liệu ban đầu
+    
         if ($user->role === 'lecturer') {
-            // Giảng viên: Chỉ lấy đề tài do mình tạo
-            $query->where('lecturer', $user->name);
+            $classIds = $user->classes->pluck('class_id');
+          
+        $query->whereIn('class_id', $classIds);
             
-            // List lớp (cho dropdown filter): Chỉ lấy lớp mình dạy
+         
             $classes = $user->classes;
 
         } elseif ($user->role === 'admin') {
@@ -37,7 +38,7 @@ class TopicController extends Controller
             $classes = ClassSection::with('subject')->get();
         }
 
-        // 4. Áp dụng bộ lọc chung (Dùng cho cả Admin và Lecturer)
+        
         
         // Filter theo lớp
         if ($request->filled('class_id')) {
@@ -50,7 +51,7 @@ class TopicController extends Controller
         }
         
         // 5. Thực hiện truy vấn và phân trang
-        $topics = $query->orderBy('created_at', 'desc') // Nên sắp xếp mới nhất lên đầu
+        $topics = $query->orderBy('created_at', 'desc') 
                         ->paginate(10)
                         ->withQueryString();
         
@@ -85,7 +86,7 @@ class TopicController extends Controller
         ]);
 
         // Kiểm tra xem class_id có thuộc về lecturer này không
-        $classIds = $user->classes->pluck('class_id'); // <-- SỬA Ở ĐÂY
+        $classIds = $user->classes->pluck('class_id'); 
         if (!$classIds->contains($request->class_id)) {
             return redirect()->back()
                            ->withInput()

@@ -298,8 +298,7 @@
                 </a>
 
                 <!-- Students -->
-                <a href="/admin/users" 
-                   class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
+                <a href="/admin/users" class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate"></i>
                     <span>Người dùng</span>
                 </a>
@@ -418,33 +417,33 @@
 
                                 if (notifications.length === 0) {
                                     list.innerHTML = `
-                                        <li class="text-center py-4">
-                                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
-                                            <p class="text-muted mb-0 small">Không có thông báo mới</p>
-                                        </li>
-                                    `;
+                                            <li class="text-center py-4">
+                                                <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                                                <p class="text-muted mb-0 small">Không có thông báo mới</p>
+                                            </li>
+                                        `;
                                     return;
                                 }
 
                                 list.innerHTML = notifications.map(notif => `
-                                    <li>
-                                        <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
-                                           href="{{ url('/') }}/notifications/${notif.notification_id}/read"
-                                           style="white-space: normal;">
-                                            <div class="d-flex align-items-start py-2">
-                                                <div class="me-3">
-                                                    <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                        <li>
+                                            <a class="dropdown-item ${!notif.is_read ? 'bg-light' : ''}" 
+                                               href="{{ url('/') }}/notifications/${notif.notification_id}/read"
+                                               style="white-space: normal;">
+                                                <div class="d-flex align-items-start py-2">
+                                                    <div class="me-3">
+                                                        <i class="fas ${notif.icon} text-${notif.color}"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <p class="mb-1 fw-semibold small">${notif.title}</p>
+                                                        <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
+                                                        <small class="text-muted">${formatTime(notif.created_at)}</small>
+                                                    </div>
+                                                    ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
                                                 </div>
-                                                <div class="flex-grow-1">
-                                                    <p class="mb-1 fw-semibold small">${notif.title}</p>
-                                                    <p class="mb-1 text-muted" style="font-size: 0.85rem;">${notif.message}</p>
-                                                    <small class="text-muted">${formatTime(notif.created_at)}</small>
-                                                </div>
-                                                ${!notif.is_read ? '<span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px; padding: 0;"></span>' : ''}
-                                            </div>
-                                        </a>
-                                    </li>
-                                `).join('');
+                                            </a>
+                                        </li>
+                                    `).join('');
                             }
 
                             // Format time ago
@@ -498,7 +497,8 @@
                                 <hr class="dropdown-divider">
                             </li>
                             <li>
-                                <form action="{{ route('logout') }}" method="POST">
+                                <form action="{{ route('logout') }}" method="POST"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn đăng xuất không?');">
                                     @csrf
                                     <button class="dropdown-item text-danger" type="submit">
                                         <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất

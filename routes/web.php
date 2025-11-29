@@ -9,6 +9,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ClassSectionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GroupsChatController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\StudentController;
 
@@ -33,7 +34,8 @@ Route::get('/', function () {
 
 Route::resource('groups', GroupController::class);
 Route::resource('topics', TopicController::class);
-
+Route::get('/groups/{groupId}/chat', [GroupsChatController::class, 'showChat'])
+        ->name('groups.chat.show');
 // Lời mời
 Route::get('invites', [InviteController::class, 'index'])->name('invites.index');
 Route::get('invites/{id}/approve', [InviteController::class, 'approve'])->name('invites.approve');
@@ -142,7 +144,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('students-export', [StudentController::class, 'export'])->name('students.export');
     Route::get('students-template/download', [StudentController::class, 'downloadTemplate'])->name('students.download-template');
 });
-
+Route::middleware(['auth'])->group(function () {
+    // Chat routes - RA NGOÀI prefix "user"
+    Route::get('/groups/{groupId}/chat', [GroupsChatController::class, 'showChat'])
+        ->name('groups.chat.show');
+    
+    Route::post('/groups/{groupId}/chat/send', [GroupsChatController::class, 'sendMessage'])
+        ->name('groups.chat.send');
+});
 
 use App\Http\Controllers\UserDashboardController;
 
