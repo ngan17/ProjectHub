@@ -7,59 +7,113 @@ use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsOnFailure;
+use Maatwebsite\Excel\Concerns\SkipsFailures;
 
-class StudentsImport implements ToModel, WithHeadingRow, WithValidation
+class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure
 {
+    use SkipsFailures;
+
     protected $classId;
+    protected $stats = [
+        'created' => 0,
+        'updated' => 0,
+        'assigned' => 0,
+        'skipped' => 0,
+    ];
 
     public function __construct($classId)
     {
         $this->classId = $classId;
     }
 
+    /**
+     * Xử lý từng row trong Excel
+     */
     public function model(array $row)
     {
-        // Kiểm tra xem email đã tồn tại chưa
-        $existingUser = User::where('email', $row['email'])->first();
-        
-        if ($existingUser) {
-            // Nếu đã tồn tại, chỉ thêm vào lớp mới
-            if (!$existingUser->classes()->where('class_id', $this->classId)->exists()) {
-                $existingUser->classes()->attach($this->classId);
+        // Tìm sinh viên theo email
+        $student = User::where('email', $row['email'])->first();
+
+        if ($student) {
+            // Nếu sinh viên đã tồn tại
+            
+            // Kiểm tra role
+            if ($student->role !== 'student') {
+                $this->stats['skipped']++;
+                return null; // Bỏ qua nếu không phải student
             }
-            return null;
+
+            // Cập nhật thông tin nếu cần
+            if (isset($row['name']) && !empty($row['name'])) {
+                $student->name = $row['name'];
+            }
+            
+            // Cập nhật password nếu có
+            if (isset($row['password']) && !empty($row['password'])) {
+                $student->password = Hash::make($row['password']);
+            }
+            
+            $student->save();
+            $this->stats['updated']++;
+
+            // Thêm vào lớp nếu chưa có
+            if (!$student->classes()->where('class_sections.class_id', $this->classId)->exists()) {
+                $student->classes()->attach($this->classId);
+                $this->stats['assigned']++;
+            }
+
+            return null; // Không tạo mới
         }
 
-        // Tạo user mới
-        $student = User::create([
-            'name' => $row['ho_va_ten'],
+        // Nếu sinh viên chưa tồn tại - Tạo mới
+        $newStudent = User::create([
+            'name' => $row['name'],
             'email' => $row['email'],
-            'password' => Hash::make($row['mat_khau'] ?? '123456'), // Mật khẩu mặc định nếu không có
+            'password' => Hash::make($row['password'] ?? 'password123'),
             'role' => 'student',
             'isFirstLogin' => true,
             'isHaveGroup' => false,
         ]);
 
         // Gán vào lớp
-        $student->classes()->attach($this->classId);
+        $newStudent->classes()->attach($this->classId);
+        
+        $this->stats['created']++;
 
-        return $student;
+        return null; // Return null vì đã xử lý thủ công
     }
 
+    /**
+     * Validation rules
+     */
     public function rules(): array
     {
         return [
-            'ho_va_ten' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email' => 'required|email',
+            'password' => 'nullable|string|min:6',
         ];
     }
 
+    /**
+     * Custom validation messages
+     */
     public function customValidationMessages()
     {
         return [
-            'ho_va_ten.required' => 'Họ và tên không được để trống',
+            'name.required' => 'Tên sinh viên không được để trống',
             'email.required' => 'Email không được để trống',
-            'email.email' => 'Email không hợp lệ',
+            'email.email' => 'Email không đúng định dạng',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
         ];
+    }
+
+    /**
+     * Lấy thống kê sau khi import
+     */
+    public function getStats()
+    {
+        return $this->stats;
     }
 }

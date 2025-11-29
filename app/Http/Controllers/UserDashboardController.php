@@ -95,16 +95,15 @@ class UserDashboardController extends Controller
     {
         $topic = Topics::with([
             'subject',
-            'subject.classes',
+            'class',
             'assignedGroup',
-            'topic_requests'
+            'topic_requests.group'
         ])->findOrFail($id);
 
         $user = Auth::user();
-        $myGroups = $this->getUserGroups($user);
-        $userClasses = $user->classes;
 
-        $userClass = $userClasses->first();
+        // Lấy TẤT CẢ nhóm của user (để kiểm tra)
+        $myGroups = $this->getUserGroups($user);
 
         // Kiểm tra nhóm nào đã đăng ký đề tài này
         $groupsRegistered = $topic->topic_requests()
@@ -115,8 +114,6 @@ class UserDashboardController extends Controller
         return view('user.topic_detail', compact(
             'topic',
             'myGroups',
-            'userClasses',
-            'userClass',
             'groupsRegistered'
         ));
     }
@@ -260,7 +257,7 @@ class UserDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // ... (Code cũ giữ nguyên) ...
+        // Lấy các nhóm mà user đã tham gia
         $groups = Groups::where('leader_id', $user->user_id)
             ->orWhereHas('members', function ($query) use ($user) {
                 $query->where('group_members.user_id', $user->user_id);
@@ -269,23 +266,20 @@ class UserDashboardController extends Controller
             ->withCount('members')
             ->paginate(9);
 
-        $userClasses = ClassSection::whereHas('users', function ($query) use ($user) {
-            $query->where('users.user_id', $user->user_id);
-        })
-            ->with(['groups.leader', 'groups.members', 'groups.joinRequests'])
-            ->get();
-
+        // Lấy danh sách các lớp mà user đã tham gia nhóm
         $joinedClassIds = Groups::query()
             ->select('class_id')
-            ->where('leader_id', $user->user_id) // Là trưởng nhóm
+            ->where('leader_id', $user->user_id)
             ->orWhereHas('members', function ($q) use ($user) {
-                $q->where('group_members.user_id', $user->user_id); // Hoặc là thành viên
+                $q->where('group_members.user_id', $user->user_id);
             })
             ->pluck('class_id')
             ->unique()
             ->toArray();
 
-        // Truyền thêm $joinedClassIds sang view
+        // Lấy TẤT CẢ các lớp mà user tham gia (dùng quan hệ user->classes)
+        $userClasses = $user->classes;
+
         return view('user.my_groups', compact('groups', 'userClasses', 'joinedClassIds'));
     }
     /**
@@ -836,7 +830,54 @@ class UserDashboardController extends Controller
             ->with('subject')
             ->get();
     }
+    public function groupTopics(Request $request, $groupId)
+{
+    $group = Groups::with(['class.subject', 'leader', 'topic'])->findOrFail($groupId);
 
+    // Kiểm tra user có phải thành viên nhóm không
+    if (!$this->isGroupLeader($group) && !$this->isGroupMember($group)) {
+        return redirect()->route('user.my_groups')
+            ->with('error', 'Bạn không phải thành viên của nhóm này!');
+    }
+
+    // Nếu nhóm không thuộc lớp nào thì không thể tìm đề tài
+    if (!$group->class_id) {
+        return back()->with('error', 'Nhóm chưa thuộc lớp học nào!');
+    }
+
+    // Lấy đề tài CHỈ TRONG LỚP CỦA NHÓM
+    $query = Topics::with(['subject', 'assignedGroup', 'topic_requests'])
+        ->where('class_id', $group->class_id);
+
+    // Apply filters
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('lecturer', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%");
+        });
+    }
+
+    // Filter theo trạng thái
+    if ($request->filled('status')) {
+        if ($request->status === 'available') {
+            $query->whereNull('assigned_group_id');
+        } elseif ($request->status === 'assigned') {
+            $query->whereNotNull('assigned_group_id');
+        }
+    }
+
+    $topics = $query->orderBy('created_at', 'desc')->paginate(10);
+
+    // Lấy danh sách topic_id mà nhóm đã gửi request (Pending hoặc Accepted)
+    $groupsRegistered = Topic_requests::where('group_id', $groupId)
+        ->whereIn('status', ['Pending', 'Accepted'])
+        ->pluck('topic_id')
+        ->toArray();
+
+    return view('user.group_topics', compact('group', 'topics', 'groupsRegistered'));
+}
     /**
      * Lấy môn học của user
      */

@@ -17,7 +17,7 @@ use App\Http\Controllers\StudentController;
 
 Route::get('/', function () {
     if (Illuminate\Support\Facades\Auth::check()) {
-       
+
         $user = Illuminate\Support\Facades\Auth::user();
         if ($user->role === 'student') {
             return redirect()->route('user.dashboard');
@@ -35,7 +35,7 @@ Route::get('/', function () {
 Route::resource('groups', GroupController::class);
 Route::resource('topics', TopicController::class);
 Route::get('/groups/{groupId}/chat', [GroupsChatController::class, 'showChat'])
-        ->name('groups.chat.show');
+    ->name('groups.chat.show');
 // Lời mời
 Route::get('invites', [InviteController::class, 'index'])->name('invites.index');
 Route::get('invites/{id}/approve', [InviteController::class, 'approve'])->name('invites.approve');
@@ -76,6 +76,8 @@ Route::middleware(['auth'])->group(function () {
     // 2. Route cho trang Mật khẩu
     Route::get('/profile/password', [UserController::class, 'changePasswordForm'])->name('users.profile.password');
     Route::put('/profile/password', [UserController::class, 'changePassword'])->name('users.password.update');
+     Route::get('/check-student-email', [StudentController::class, 'checkEmail'])
+        ->name('students.check-email');
 });
 use Illuminate\Support\Facades\Auth;
 
@@ -148,7 +150,7 @@ Route::middleware(['auth'])->group(function () {
     // Chat routes - RA NGOÀI prefix "user"
     Route::get('/groups/{groupId}/chat', [GroupsChatController::class, 'showChat'])
         ->name('groups.chat.show');
-    
+
     Route::post('/groups/{groupId}/chat/send', [GroupsChatController::class, 'sendMessage'])
         ->name('groups.chat.send');
 });
@@ -193,7 +195,8 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     Route::get('/my-topics', [UserDashboardController::class, 'myTopics'])
         ->name('my_topics');
 
-
+    Route::get('/groups/{groupId}/topics', [UserDashboardController::class, 'groupTopics'])
+        ->name('group_topics');
     // ============================================================
     // GROUPS (Nhóm)
     // ============================================================
@@ -205,7 +208,7 @@ Route::middleware(['auth'])->prefix('user')->name('user.')->group(function () {
     // Chi tiết nhóm
     Route::get('/groups/{id}', [UserDashboardController::class, 'groupDetail'])
         ->name('group_detail');
-  
+
 
     // ============================================================
     // INVITATIONS (Lời mời)

@@ -53,11 +53,10 @@ class GroupsChatController extends Controller
             'content' => $request->content,
         ]);
 
-        // Broadcast event: BỎ toOthers() để người gửi cũng nhận qua WebSocket
+        
         broadcast(new NewChatMessage($message)); 
 
-        // Tải user vào đối tượng tin nhắn để phản hồi AJAX 
-        // (cho trường hợp Echo không hoạt động, để logic hiển thị thủ công có đủ dữ liệu)
+       
         $message->load('user'); 
 
         return response()->json([

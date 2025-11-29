@@ -6,7 +6,7 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-10 offset-md-1">
-            <h2 class="text-primary">💬 Chat Nhóm: {{ $group->group_name }}</h2>
+            <h2 class="text-primary"> Chat Nhóm: {{ $group->group_name }}</h2>
             <p class="text-muted">Topic: {{ $group->topic->name ?? 'Chưa chọn Topic' }}</p>
 
             <div id="chat-box" 

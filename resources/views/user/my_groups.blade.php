@@ -31,45 +31,24 @@
             </div>
         </div>
 
-        <!-- Groups Grid -->
-        @if($groups->isEmpty())
-            <div class="row">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body text-center py-5">
-                            <div class="mb-4">
-                                <i class="fas fa-users fa-4x text-primary opacity-50"></i>
-                            </div>
-                            <h5 class="fw-bold mb-2">Bạn chưa có nhóm nào</h5>
-                            <p class="text-muted mb-4">Hãy tạo nhóm mới hoặc tham gia nhóm có sẵn</p>
-                            @if($userClasses && $userClasses->count() > 0)
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <a href="{{ route('user.create_group') }}" class="btn btn-outline-primary">
-                                        <i class="fas fa-plus me-2"></i>Tạo nhóm mới
-                                    </a>
-                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#findGroupModal">
-                                        <i class="fas fa-search me-2"></i>Tìm nhóm để tham gia
-                                    </button>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @else
-            @php
-                // Group by class
-                $groupsByClass = $groups->groupBy('class_id');
-            @endphp
+        @php
+            // Group các nhóm theo lớp
+            $groupsByClass = $groups->groupBy('class_id');
+            
+            // Lấy danh sách class_id từ các nhóm đã có
+            $classIdsWithGroups = $groupsByClass->keys()->toArray();
+        @endphp
 
-            @foreach($groupsByClass as $classId => $classGroups)
-                @php
-                    $class = $classGroups->first()->class;
-                @endphp
-                
-                <div class="mb-5">
-                    <!-- Class Header -->
-                    <div class="d-flex align-items-center mb-3">
+        <!-- Hiển thị các lớp có nhóm -->
+        @foreach($groupsByClass as $classId => $classGroups)
+            @php
+                $class = $classGroups->first()->class;
+            @endphp
+            
+            <div class="mb-5">
+                <!-- Class Header -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
                         <div class="bg-primary bg-opacity-10 rounded p-3 me-3">
                             <i class="fas fa-chalkboard text-primary fa-lg"></i>
                         </div>
@@ -82,91 +61,157 @@
                                 @endif
                             </small>
                         </div>
-                        
                     </div>
+                    <span class="badge bg-success">Đã có nhóm</span>
+                </div>
 
-                    <!-- Groups Grid -->
-                    <div class="row g-3">
-                        @foreach($classGroups as $group)
-                            <div class="col-12 col-md-6 col-xl-4">
-                                <div class="card border-0 shadow-sm h-100 hover-card">
-                                    <div class="card-body p-4">
-                                        <!-- Header -->
-                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                            <h6 class="mb-0 fw-bold flex-grow-1 me-2" 
-                                                style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
-                                                title="{{ $group->group_name }}">
-                                                {{ $group->group_name }}
-                                            </h6>
-                                            @if($group->leader_id == Auth::id())
-                                                <span class="badge bg-primary rounded-pill">Trưởng nhóm</span>
-                                            @else
-                                                <span class="badge bg-secondary rounded-pill">Thành viên</span>
-                                            @endif
+                <!-- Groups Grid -->
+                <div class="row g-3">
+                    @foreach($classGroups as $group)
+                        <div class="col-12 col-md-6 col-xl-4">
+                            <div class="card border-0 shadow-sm h-100 hover-card">
+                                <div class="card-body p-4">
+                                    <!-- Header -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <h6 class="mb-0 fw-bold flex-grow-1 me-2" 
+                                            style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                                            title="{{ $group->group_name }}">
+                                            {{ $group->group_name }}
+                                        </h6>
+                                        @if($group->leader_id == Auth::id())
+                                            <span class="badge bg-primary rounded-pill">Trưởng nhóm</span>
+                                        @else
+                                            <span class="badge bg-secondary rounded-pill">Thành viên</span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Info -->
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-user-tie text-primary me-2" style="width: 20px;"></i>
+                                            <small class="text-muted">{{ $group->leader->name }}</small>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-users text-primary me-2" style="width: 20px;"></i>
+                                            <small class="text-muted">{{ $group->members->count() + 1 }} thành viên</small>
                                         </div>
 
-                                        <!-- Info -->
-                                        <div class="mb-3">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-user-tie text-primary me-2" style="width: 20px;"></i>
-                                                <small class="text-muted">{{ $group->leader->name }}</small>
+                                        @if($group->topic)
+                                            <div class="d-flex align-items-start mt-3">
+                                                <i class="fas fa-lightbulb text-warning me-2 mt-1" style="width: 20px;"></i>
+                                                <small class="text-muted" 
+                                                       style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+                                                       title="{{ $group->topic->name }}">
+                                                    {{ $group->topic->name }}
+                                                </small>
                                             </div>
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fas fa-users text-primary me-2" style="width: 20px;"></i>
-                                                <small class="text-muted">{{ $group->members->count() + 1 }} thành viên</small>
+                                        @else
+                                            <div class="alert alert-warning py-2 px-3 mb-0 mt-3">
+                                                <i class="fas fa-exclamation-circle me-2"></i>
+                                                <small>Chưa có đề tài</small>
                                             </div>
+                                        @endif
+                                    </div>
 
-                                            @if($group->topic)
-                                                <div class="d-flex align-items-start mt-3">
-                                                    <i class="fas fa-lightbulb text-warning me-2 mt-1" style="width: 20px;"></i>
-                                                    <small class="text-muted" 
-                                                           style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
-                                                           title="{{ $group->topic->name }}">
-                                                        {{ $group->topic->name }}
-                                                    </small>
-                                                </div>
-                                            @else
-                                                <div class="alert alert-warning py-2 px-3 mb-0 mt-3">
-                                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                                    <small>Chưa có đề tài</small>
-                                                </div>
-                                            @endif
-                                        </div>
+                                    <!-- Actions -->
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ route('user.group_detail', $group->group_id) }}" class="btn btn-primary">
+                                            <i class="fas fa-eye me-2"></i>Chi tiết
+                                        </a>
 
-                                        <!-- Actions -->
-                                        <div class="d-grid gap-2">
-                                            <a href="{{ route('user.group_detail', $group->group_id) }}" class="btn btn-primary">
-                                                <i class="fas fa-eye me-2"></i>Chi tiết
+                                        <a href="{{ route('groups.chat.show', $group->group_id) }}" class="btn btn-success">
+                                            <i class="fas fa-comments me-2"></i>Chat nhóm
+                                        </a>
+
+                                        @if($group->leader_id == Auth::id())
+                                            <a href="{{ route('user.invite-member', $group->group_id) }}" class="btn btn-outline-success">
+                                                <i class="fas fa-user-plus me-2"></i>Mời thành viên
                                             </a>
-
-                                            <a href="{{ route('groups.chat.show', $group->group_id) }}" class="btn btn-success">
-                                                <i class="fas fa-comments me-2"></i>Chat nhóm
-                                            </a>
-
-                                            @if($group->leader_id == Auth::id())
-                                                <a href="{{ route('user.invite-member', $group->group_id) }}" class="btn btn-outline-success">
-                                                    <i class="fas fa-user-plus me-2"></i>Mời thành viên
-                                                </a>
-                                            @endif
-                                        </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+            </div>
+        @endforeach
 
-            <!-- Pagination -->
-            @if($groups->hasPages())
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-center">
-                            {{ $groups->links() }}
+        <!-- Hiển thị các lớp CHƯA có nhóm -->
+        @foreach($userClasses as $class)
+            @if(!in_array($class->class_id, $classIdsWithGroups))
+                <div class="mb-5">
+                    <!-- Class Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-warning bg-opacity-10 rounded p-3 me-3">
+                                <i class="fas fa-chalkboard text-warning fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold">{{ $class->class_name }}</h5>
+                                <small class="text-muted">
+                                    0 nhóm
+                                    @if($class->subject)
+                                        - {{ $class->subject->subject_name }}
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+                        <span class="badge bg-warning">Chưa có nhóm</span>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-users fa-3x text-warning opacity-50"></i>
+                                    </div>
+                                    <h6 class="fw-bold mb-2">Bạn chưa có nhóm trong lớp này</h6>
+                                    <p class="text-muted mb-4">Tạo nhóm mới hoặc tìm nhóm để tham gia</p>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <a href="{{ route('user.create_group') }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-plus me-2"></i>Tạo nhóm mới
+                                        </a>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#findGroupModal">
+                                            <i class="fas fa-search me-2"></i>Tìm nhóm
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             @endif
+        @endforeach
+
+        <!-- Empty State nếu không có nhóm nào -->
+        @if($groups->isEmpty() && $userClasses->isEmpty())
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-users fa-4x text-primary opacity-50"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Bạn chưa tham gia lớp học nào</h5>
+                            <p class="text-muted mb-0">Vui lòng liên hệ giáo viên để được thêm vào lớp học</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Pagination -->
+        @if($groups->hasPages())
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-center">
+                        {{ $groups->links() }}
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
 
@@ -205,20 +250,13 @@
                                 <div class="row g-3">
                                     @forelse($class->groups as $classGroup)
                                         @php
-                                            // 1. Check xem có phải thành viên nhóm này ko
                                             $isMember = $classGroup->members->contains('user_id', Auth::id()) || $classGroup->leader_id == Auth::id();
-                                            
-                                            // 2. Check xem có yêu cầu đang chờ ko
                                             $hasPendingRequest = $classGroup->joinRequests()
                                                 ->where('member_id', Auth::id())
                                                 ->where('status', 'Pending')
                                                 ->exists();
-
-                                            // 3. Tính tổng thành viên (Leader + Members)
                                             $totalMembers = $classGroup->members->count() + 1;
                                             $isFull = $totalMembers >= 5;
-
-                                            // 4. Check xem user đã có nhóm KHÁC trong lớp này chưa
                                             $alreadyHasGroupInClass = in_array($classGroup->class_id, $joinedClassIds ?? []);
                                         @endphp
 

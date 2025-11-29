@@ -3,13 +3,15 @@
 @section('title', 'Chi tiết nhóm')
 
 @section('content')
-    <div class="container-fluid">
-        <!-- Back Button -->
-        <div class="mb-3">
-            <a href="{{ route('user.my_groups') }}" class="btn btn-link text-primary p-0">
-                <i class="fas fa-arrow-left me-2"></i> Quay lại danh sách nhóm
-            </a>
-        </div>
+    <div class="container-fluid px-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('user.my_groups') }}">Nhóm của tôi</a></li>
+                <li class="breadcrumb-item active">{{ $group->group_name }}</li>
+            </ol>
+        </nav>
 
         <!-- Group Header -->
         <div class="card border-0 shadow-sm mb-4 text-white"
@@ -32,7 +34,7 @@
                         </div>
                     </div>
 
-                    @if(Auth::id() == $group->leader_id)
+                    @if($isLeader)
                         <div class="col-lg-4 mt-3 mt-lg-0">
                             <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
                                 <a href="{{ route('user.invite-member', $group->group_id) }}" class="btn btn-light">
@@ -55,7 +57,7 @@
             <div class="col-lg-8">
                 <!-- Topic Information -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
+                    <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-bold">
                             <i class="fas fa-book text-success me-2"></i>
                             Đề tài
@@ -65,7 +67,10 @@
                         @if($group->topic)
                             <div>
                                 <h5 class="fw-bold mb-3">{{ $group->topic->name }}</h5>
-                                <p class="text-muted mb-4">{{ $group->topic->description }}</p>
+                                
+                                @if($group->topic->description)
+                                    <p class="text-muted mb-4">{{ $group->topic->description }}</p>
+                                @endif
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
@@ -79,7 +84,7 @@
                                         <div class="col-md-6">
                                             <div class="p-3 rounded" style="background-color: #f3e5f5;">
                                                 <p class="text-muted small mb-1">Môn học</p>
-                                                <p class="fw-semibold mb-0">{{ $group->topic->subject->name }}</p>
+                                                <p class="fw-semibold mb-0">{{ $group->topic->subject->subject_name }}</p>
                                             </div>
                                         </div>
                                     @endif
@@ -92,13 +97,20 @@
                             </div>
                         @else
                             <div class="text-center py-5">
-                                <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
-                                <p class="text-muted mb-3">Nhóm chưa đăng ký đề tài</p>
+                                <i class="fas fa-book-open fa-4x text-muted opacity-50 mb-3"></i>
+                                <h6 class="fw-bold mb-2">Nhóm chưa đăng ký đề tài</h6>
+                                <p class="text-muted small mb-4">
+                                    @if($isLeader)
+                                        Hãy tìm và đăng ký đề tài phù hợp cho nhóm của bạn
+                                    @else
+                                        Liên hệ trưởng nhóm để đăng ký đề tài
+                                    @endif
+                                </p>
 
-                                @if(Auth::id() == $group->leader_id)
-                                    <a href="{{ route('user.topics') }}" class="btn btn-primary">
+                                @if($isLeader)
+                                    <a href="{{ route('user.group_topics', $group->group_id) }}" class="btn btn-primary">
                                         <i class="fas fa-search me-2"></i>
-                                        Tìm đề tài
+                                        Tìm đề tài cho nhóm
                                     </a>
                                 @endif
                             </div>
@@ -106,10 +118,29 @@
                     </div>
                 </div>
 
+                <!-- Chat Group Button -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <h6 class="mb-1 fw-bold">
+                                    <i class="fas fa-comments text-success me-2"></i>
+                                    Trò chuyện nhóm
+                                </h6>
+                                <small class="text-muted">Trao đổi với các thành viên trong nhóm</small>
+                            </div>
+                            <a href="{{ route('groups.chat.show', $group->group_id) }}" class="btn btn-success">
+                                <i class="fas fa-comments me-2"></i>
+                                Mở chat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Class Information -->
                 @if($group->class)
                     <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3">
+                        <div class="card-header bg-white border-0 py-3">
                             <h5 class="mb-0 fw-bold">
                                 <i class="fas fa-chalkboard text-primary me-2"></i>
                                 Thông tin lớp học
@@ -124,7 +155,7 @@
                             @if($group->class->subject)
                                 <div class="mb-3">
                                     <p class="text-muted small mb-1">Môn học</p>
-                                    <p class="fw-semibold mb-1">{{ $group->class->subject->name }}</p>
+                                    <p class="fw-semibold mb-1">{{ $group->class->subject->subject_name }}</p>
                                     <p class="text-muted small">{{ $group->class->subject->subject_code ?? '' }}</p>
                                 </div>
 
@@ -136,7 +167,7 @@
                                 @endif
                             @endif
 
-                            <a href="{{ route('user.class_detail', $group->class->class_id) }}" class="btn btn-primary">
+                            <a href="{{ route('user.class_detail', $group->class->class_id) }}" class="btn btn-outline-primary">
                                 <i class="fas fa-external-link-alt me-2"></i>
                                 Xem thông tin lớp
                             </a>
@@ -149,7 +180,7 @@
             <div class="col-lg-4">
                 <!-- Leader Card -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
+                    <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-bold">
                             <i class="fas fa-crown text-warning me-2"></i>
                             Trưởng nhóm
@@ -171,7 +202,7 @@
 
                 <!-- Members List -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
+                    <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-bold">
                             <i class="fas fa-users text-primary me-2"></i>
                             Thành viên ({{ $memberCount }})
@@ -183,7 +214,7 @@
                         @else
                             <div class="list-group list-group-flush">
                                 @foreach($members as $member)
-                                    <div class="list-group-item px-0 py-3">
+                                    <div class="list-group-item px-0 py-3 border-0">
                                         <div class="d-flex align-items-center">
                                             <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold me-3"
                                                 style="width: 40px; height: 40px;">
@@ -199,7 +230,7 @@
                             </div>
                         @endif
 
-                        @if(Auth::id() == $group->leader_id)
+                        @if($isLeader && $memberCount < 4)
                             <a href="{{ route('user.invite-member', $group->group_id) }}" class="btn btn-success w-100 mt-3">
                                 <i class="fas fa-user-plus me-2"></i>
                                 Mời thêm thành viên
@@ -208,10 +239,10 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
-                @if(Auth::id() != $group->leader_id && $members->contains('user_id', Auth::id()))
+                <!-- Actions for Members -->
+                @if(!$isLeader && $isMember)
                     <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white py-3">
+                        <div class="card-header bg-white border-0 py-3">
                             <h5 class="mb-0 fw-bold">
                                 <i class="fas fa-cog text-secondary me-2"></i>
                                 Hành động

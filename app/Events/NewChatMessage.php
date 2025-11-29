@@ -24,7 +24,7 @@ class NewChatMessage implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
-        // Kênh riêng tư, chỉ thành viên nhóm mới có thể lắng nghe
+      
         return [
             new PrivateChannel('chat.group.' . $this->message->group_id),
         ];
@@ -41,9 +41,7 @@ class NewChatMessage implements ShouldBroadcastNow
         $this->message->loadMissing('user'); 
 
         return [
-            // BƯỚC SỬA LỖI 2: Chuyển đổi mô hình thành mảng bằng toArray().
-            // Điều này đảm bảo tất cả các quan hệ đã tải (như 'user') 
-            // được bao gồm trong payload JSON gửi qua WebSocket, khắc phục lỗi JS.
+           
             'message' => $this->message->toArray(), 
         ];
     }
